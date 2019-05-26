@@ -56,25 +56,15 @@ class NewMeeting extends React.Component {
     startTime: '',
     endTime: '',
     allUsers: [],
-    // allUsers: [
-    //   {
-    //     id: 1,
-    //     Email: 'gigi@gmail.com'
-    //   },
-    //   {
-    //     id: 2,
-    //     Email: 'likoosh@gmail.com'
-    //   },
-    // ],
-    // emails: [],
     specificArea: '',
     placeType: '',
     priceLevel: '2',
     notes: '',
-    participantIds: [],
+    chosenParticipantIds: [],
     chosenParticipants: [],
   }
 
+  //get all users from DB
   componentWillMount() {
     url = "http://proj.ruppin.ac.il/bgroup77/prod/api/participants";
     fetch(url, { method: 'GET' })
@@ -102,7 +92,19 @@ class NewMeeting extends React.Component {
     });
   }
 
+  // getChosenParticipantsIDs() {
+
+  // }
+
   sendNewMeetingInfo() {
+    // this.getChosenParticipantsIDs();
+    // if (this.state.chosenParticipants != null) {
+    //   return this.state.chosenParticipants.map((value) => {
+    //     this.state.chosenParticipantIds.push(value.id)
+    //   })
+    //   console.warn('chosen participants ids:', this.state.chosenParticipantIds)
+    // }
+
     var NewMeeting = {
       Subject: this.state.subject,
       StartDate: this.state.date,
@@ -116,38 +118,40 @@ class NewMeeting extends React.Component {
     };
     console.warn(NewMeeting);
 
-    fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/meeting', {
-      method: 'POST',
-      headers: { "Content-type": "application/json; charset=UTF-8" },
-      body: JSON.stringify(NewMeeting),
-    })
-      .then(res => res.json())
-      .then(response => {
-      })
+    // fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/meeting', {
+    //   method: 'POST',
+    //   headers: { "Content-type": "application/json; charset=UTF-8" },
+    //   body: JSON.stringify(NewMeeting),
+    // })
+    //   .then(res => res.json())
+    //   .then(response => {
+    //   })
 
-      .catch(error => console.warn('Error:', error.message));
-    Alert.alert(
-      'הודעה',
-      'פגישה נוצרה בהצלחה',
-      [
-        { text: 'לחץ להזנת העדפות', onPress: () => this.props.navigation.navigate('Preferences') },
-        {
-          text: 'ביטול',
-          onPress: () => console.warn('Cancel Pressed'),
-          style: 'cancel',
-        },
+    //   .catch(error => console.warn('Error:', error.message));
+    // Alert.alert(
+    //   'הודעה',
+    //   'פגישה נוצרה בהצלחה',
+    //   [
+    //     { text: 'לחץ להזנת העדפות', onPress: () => this.props.navigation.navigate('Preferences') },
+    //     {
+    //       text: 'ביטול',
+    //       onPress: () => console.warn('Cancel Pressed'),
+    //       style: 'cancel',
+    //     },
 
-      ],
-      { cancelable: false },
-    );
-    // alert("פגישה נוצרה בהצלחה");
+    //   ],
+    //   { cancelable: false },
+    // );
   }
 
-  renderParticipants() {
+
+
+  //show chosen participants
+  renderChosenParticipants() {
     if (this.state.chosenParticipants != null) {
       return this.state.chosenParticipants.map((value) => {
         return (
-          <View><Text>{value}</Text></View>
+          <View><Text style={styles.chosenParticipants}>{value.name}</Text></View>
         )
       })
     }
@@ -238,18 +242,13 @@ class NewMeeting extends React.Component {
     return (
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
-          <TouchableOpacity onPress={() => this.props.navigation.navigate('Campings')}>
-            {/* <Ionicons name="md-arrow-back" size={24} /> */}
-          </TouchableOpacity>
+          {/* <TouchableOpacity onPress={() => this.props.navigation.navigate('')}>
+            <Ionicons name="md-arrow-back" size={24} />
+          </TouchableOpacity> */}
         </View>
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={styles.title}>פגישה חדשה</Text>
         </View>
-        {/* <View style={{ flex: 1, alignItems: 'flex-end' }}>
-          <TouchableOpacity onPress={() => this.props.navigation.navigate('Campings')}>
-            <Ionicons name="ios-search" size={24} />
-          </TouchableOpacity>
-        </View> */}
       </View>
     )
   }
@@ -269,13 +268,34 @@ class NewMeeting extends React.Component {
     //ceate data for autocomplete
     var i = 0;
     var name = '';
-    dataForAutocomplete = this.state.allUsers.map((user) => {
-      i++;
-      userName = user.FirstName + " " + user.LastName
-      return { id: user.ID, name: userName }
-    }
-    );
 
+    if (this.state.allUsers !== null) {
+      dataForAutocomplete = this.state.allUsers.map((user) => {
+        // i++;
+        userName = user.FirstName + " " + user.LastName
+        return { id: user.Id, name: userName }
+      });
+    }
+    else {
+      this.setState({
+        allusers:
+          [
+            {
+              id: 1,
+              Email: 'maayan@gmail.com'
+            },
+            {
+              id: 2,
+              Email: 'lihi@gmail.com'
+            },
+            {
+              id: 3,
+              Email: 'aviel@gmail.com'
+            },
+          ],
+      })
+    }
+    console.warn('all users:', this.state.allUsers);
 
     return (
       <SafeAreaView style={styles.container} >
@@ -314,7 +334,7 @@ class NewMeeting extends React.Component {
             </View>
             {console.warn(this.state.endTime)}
           </View>
-          <View style={styles.section}>
+          <View >
             <View>
               <Text style={styles.title}>הוסף משתתפים לפגישה</Text>
             </View>
@@ -322,27 +342,38 @@ class NewMeeting extends React.Component {
               <InputAutoSuggest
                 style={{ flex: 1 }}
                 staticData={dataForAutocomplete}
-                // onDataSelectedChange={participant => this.setState(state => {
-                //   const newChosenParticipant = state.chosenParticipants.push(participant);
-                //   return {
-                //     newChosenParticipant
-                //   };
-                // })}
-                onDataSelectedChange={chosenParticipants => this.setState({ chosenParticipants })}
+                onDataSelectedChange={
+                  chosenParticipant => {
+                    if (chosenParticipant != null) {
+                      this.setState({
+                        chosenParticipants: [
+                          ...this.state.chosenParticipants,
+                          chosenParticipant
+                        ]
+                      })
+                      this.setState({
+                        chosenParticipantIds: [
+                          ...this.state.chosenParticipantIds,
+                          chosenParticipant.id,
+
+                        ]
+                      })
+                    }
+                  }}
               />
-              {console.warn('participants', this.state.chosenParticipants)}
+              {console.warn('chosen participants details:', this.state.chosenParticipants)}
+              {console.warn('chosen participants ids:', this.state.chosenParticipantIds)}
             </View>
             <View>
               {/* <ListView /> */}
               {/* <SearchBar /> */}
             </View>
-
           </View>
-          {/* <View>
-            <View><Text>המשתתפים שנבחרו לפגישה</Text></View>
-            {this.renderParticipants()}
-          </View> */}
-          {console.warn(this.state.allUsers)}
+          <View style={styles.section}>
+            <View><Text style={styles.title}>:המשתתפים שנבחרו לפגישה</Text></View>
+            {this.renderChosenParticipants()}
+          </View>
+          {/* {console.warn(this.state.allUsers)} */}
           {/* {console.warn(this.state.emails)} */}
           <View style={styles.section}>
             <View>
@@ -482,6 +513,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     marginVertical: 14,
+  },
+  chosenParticipants: {
+    fontSize: 18,
+    marginVertical: 2,
   },
   group: {
     flexDirection: 'row',
