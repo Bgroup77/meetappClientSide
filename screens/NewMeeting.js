@@ -17,10 +17,7 @@ import { Ionicons, Foundation, FontAwesome, MaterialIcons } from '@expo/vector-i
 import moment from 'moment';
 import MyDatePicker from '../components/MyDatePicker';
 import MyTimePicker from '../components/MyTimePicker';
-import GetUsers from '../components/GetUsers';
-
-// import UsersAutocomplete from '../components/UsersAutocomplete';
-// import AutocompleteExample from '../components/AutocompleteExample';
+// import GetUsers-draft1 from '../components/GetUsers';
 // import ListView from '../components/ListView';
 // import SearchBar from '../components/SearchBar';
 
@@ -114,7 +111,7 @@ class NewMeeting extends React.Component {
       PriceLevel: this.state.priceLevel,
       SpecificLocation: this.state.specificArea,
       Notes: this.state.notes,
-      Participants: this.state.participantIds,
+      Participants: '', //tbd-get participants from this.state.participantsIds
       PlaceType: this.state.placeType,
     };
     console.warn(NewMeeting);
@@ -148,9 +145,9 @@ class NewMeeting extends React.Component {
 
   renderParticipants() {
     if (this.state.chosenParticipants != null) {
-      return this.state.chosenParticipants.map((participant, key) => {
+      return this.state.chosenParticipants.map((value) => {
         return (
-          <View><Text>{participant}</Text></View>
+          <View><Text>{value}</Text></View>
         )
       })
     }
@@ -325,12 +322,13 @@ class NewMeeting extends React.Component {
               <InputAutoSuggest
                 style={{ flex: 1 }}
                 staticData={dataForAutocomplete}
-                onDataSelectedChange={participant => this.setState(state => {
-                  const newChosenParticipant = state.chosenParticipants.push(participant);
-                  return {
-                    newChosenParticipant
-                  };
-                })}
+                // onDataSelectedChange={participant => this.setState(state => {
+                //   const newChosenParticipant = state.chosenParticipants.push(participant);
+                //   return {
+                //     newChosenParticipant
+                //   };
+                // })}
+                onDataSelectedChange={chosenParticipants => this.setState({ chosenParticipants })}
               />
               {console.warn('participants', this.state.chosenParticipants)}
             </View>
@@ -340,10 +338,10 @@ class NewMeeting extends React.Component {
             </View>
 
           </View>
-          <View>
+          {/* <View>
             <View><Text>המשתתפים שנבחרו לפגישה</Text></View>
             {this.renderParticipants()}
-          </View>
+          </View> */}
           {console.warn(this.state.allUsers)}
           {/* {console.warn(this.state.emails)} */}
           <View style={styles.section}>

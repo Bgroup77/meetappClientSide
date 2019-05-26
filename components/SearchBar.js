@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import SearchInput, { createFilter } from 'react-native-search-filter';
-import emails from '../mails';
+import emails from '../mails-forSearchBarExample';
 const KEYS_TO_FILTERS = ['user.name', 'subject'];
 
 export default class SearchBar extends Component<{}> {
