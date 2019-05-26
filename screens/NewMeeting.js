@@ -97,14 +97,6 @@ class NewMeeting extends React.Component {
   // }
 
   sendNewMeetingInfo() {
-    // this.getChosenParticipantsIDs();
-    // if (this.state.chosenParticipants != null) {
-    //   return this.state.chosenParticipants.map((value) => {
-    //     this.state.chosenParticipantIds.push(value.id)
-    //   })
-    //   console.warn('chosen participants ids:', this.state.chosenParticipantIds)
-    // }
-
     var NewMeeting = {
       Subject: this.state.subject,
       StartDate: this.state.date,
@@ -113,35 +105,35 @@ class NewMeeting extends React.Component {
       PriceLevel: this.state.priceLevel,
       SpecificLocation: this.state.specificArea,
       Notes: this.state.notes,
-      Participants: '', //tbd-get participants from this.state.participantsIds
+      Participants: this.state.chosenParticipantIds,
       PlaceType: this.state.placeType,
     };
     console.warn(NewMeeting);
 
-    // fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/meeting', {
-    //   method: 'POST',
-    //   headers: { "Content-type": "application/json; charset=UTF-8" },
-    //   body: JSON.stringify(NewMeeting),
-    // })
-    //   .then(res => res.json())
-    //   .then(response => {
-    //   })
+    fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/meeting', {
+      method: 'POST',
+      headers: { "Content-type": "application/json; charset=UTF-8" },
+      body: JSON.stringify(NewMeeting),
+    })
+      .then(res => res.json())
+      .then(response => {
+      })
 
-    //   .catch(error => console.warn('Error:', error.message));
-    // Alert.alert(
-    //   'הודעה',
-    //   'פגישה נוצרה בהצלחה',
-    //   [
-    //     { text: 'לחץ להזנת העדפות', onPress: () => this.props.navigation.navigate('Preferences') },
-    //     {
-    //       text: 'ביטול',
-    //       onPress: () => console.warn('Cancel Pressed'),
-    //       style: 'cancel',
-    //     },
+      .catch(error => console.warn('Error:', error.message));
+    Alert.alert(
+      'הודעה',
+      'פגישה נוצרה בהצלחה',
+      [
+        { text: 'לחץ להזנת העדפות', onPress: () => this.props.navigation.navigate('Preferences') },
+        {
+          text: 'ביטול',
+          onPress: () => console.warn('Cancel Pressed'),
+          style: 'cancel',
+        },
 
-    //   ],
-    //   { cancelable: false },
-    // );
+      ],
+      { cancelable: false },
+    );
   }
 
 
@@ -281,17 +273,30 @@ class NewMeeting extends React.Component {
         allusers:
           [
             {
-              id: 1,
-              Email: 'maayan@gmail.com'
+              Address: null,
+              Email: "aviel_iluz@gmail.com",
+              FirstName: "אביאל",
+              Gender: 0,
+              Id: 1,
+              Image: null,
+              LastName: "אילוז",
+              Password: null,
+              Phone: null,
+              Preferences: [1,],
             },
             {
-              id: 2,
-              Email: 'lihi@gmail.com'
+              Address: null,
+              Email: "shlomi@gmail.com",
+              FirstName: "שלומי",
+              Gender: 0,
+              Id: 0,
+              Image: null,
+              LastName: "קוריאט",
+              Password: null,
+              Phone: null,
+              Preferences: [1,],
             },
-            {
-              id: 3,
-              Email: 'aviel@gmail.com'
-            },
+
           ],
       })
     }
