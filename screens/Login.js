@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { Alert, TextInput, View, StyleSheet, AsyncStorage, Image } from 'react-native';
+import { Alert, TextInput, View, StyleSheet, AsyncStorage, Image, ActivityIndicator, StatusBar } from 'react-native';
 import ActionButton from 'react-native-action-button';
 import { Input, Button, Icon } from 'react-native-elements';
 var firstPage = '';
-import MyMeetings from '../screens/MyMeetings';
+import { createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
 
 class Login extends React.Component {
     constructor(props) {
@@ -20,6 +20,10 @@ class Login extends React.Component {
         };
     }
 
+    static navigationOptions = {
+        title: 'התחבר',
+    };
+
     validateEmail(email) {
         var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
@@ -33,36 +37,24 @@ class Login extends React.Component {
         });
     }
 
+
     checkAuthentic() {
         console.log(this.state.ifExists);
         if (this.state.ifExists == true) {
             console.log(this.state.ifExists);
-            AsyncStorage.setItem("email", JSON.stringify(this.state.email));
+            console.warn("state email", this.state.email);
+            AsyncStorage.setItem("userToken", this.state.email);
+
+            // const retreivedItem = AsyncStorage.getItem('userToken');
+            // const userToken = JSON.parse(retrievedItem);
+            // alert(userToken);
+
 
             alert("ברוכים הבאים");
-            email1 = AsyncStorage.getItem("email");
-
-            // alert(email1);
-
-            this.props.navigation.navigate(
-                'HomeStack',
-                // email = AsyncStorage.getItem("email")
-
-            );
+            this.props.navigation.navigate('App');
         }
         else { alert("האימייל ו/או הסיסמא שגויים"); }
     }
-    // testfunc = async () => {
-
-    //     try {
-    //         let user = await AsyncStorage.getItem("login");
-    //         alert(user);
-    //     }
-    //     catch (error) {
-    //         alert("Not Success");
-    //     }
-
-    // }
 
     onLogin() {
         url = "http://proj.ruppin.ac.il/bgroup77/prod/api/participants/login?email=";
@@ -85,17 +77,6 @@ class Login extends React.Component {
 
         const { email, password } = this.state;
     }
-
-
-    // testFunc = async () => {
-    //     try {
-    //         let test = await AsyncStorage.getItem("login");
-    //         alert(test)
-    //     }
-    //     catch (error) {
-    //         alert("stam");
-    //     }
-    // }
 
     render() {
         const { email, password, email_valid, showLoading } = this.state;

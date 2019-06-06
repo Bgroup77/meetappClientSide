@@ -20,12 +20,12 @@ import MyTimePicker from '../components/MyTimePicker';
 // import GetUsers-draft1 from '../components/GetUsers';
 // import ListView from '../components/ListView';
 // import SearchBar from '../components/SearchBar';
-
 import { setFilters } from '../modules/campings';
 import { Input, Button, ListItem } from 'react-native-elements';
 import { InputAutoSuggest } from 'react-native-autocomplete-search';
 import { FlatList } from 'react-native-gesture-handler';
 // import Icon from 'react-native-vector-icons/FontAwesome';
+import Preferences from '../screens/Preferences';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -37,19 +37,19 @@ class NewMeeting extends React.Component {
   }
 
   static navigationOptions = {
-    header: null,
+    title: 'פגישה חדשה',
   };
 
   state = {
-    sort: 'distance',
-    type: 'all',
-    price: 'free',
-    option_full: true,
-    option_rated: true,
-    option_free: false,
-    sliderValue: 70,
-    minValue: 10,
-    maxValue: 100,
+    sort: '',
+    type: '',
+    price: '',
+    // option_full: true,
+    // option_rated: true,
+    // option_free: false,
+    // sliderValue: 70,
+    // minValue: 10,
+    // maxValue: 100,
     specificAreaOn: false,
     subject: '',
     date: '',
@@ -76,7 +76,50 @@ class NewMeeting extends React.Component {
       }
       ))
       .catch((error) => {
-        console.log("error in getting users");
+        console.warn("error in getting users from DB");
+
+        //setting 'allUsers' state with hard-coded users
+        this.setState({
+          allusers:
+            [
+              {
+                Address: null,
+                Email: "maayan1010@gmail.com",
+                FirstName: "מעיין",
+                Gender: 0,
+                Id: 3,
+                Image: null,
+                LastName: "כהן",
+                Password: null,
+                Phone: null,
+                Preferences: [1,]
+              },
+              {
+                Address: null,
+                Email: "aviel_iluz@gmail.com",
+                FirstName: "אביאל",
+                Gender: 0,
+                Id: 1,
+                Image: null,
+                LastName: "אילוז",
+                Password: null,
+                Phone: null,
+                Preferences: [1,],
+              },
+              {
+                Address: null,
+                Email: "shlomi@gmail.com",
+                FirstName: "שלומי",
+                Gender: 0,
+                Id: 0,
+                Image: null,
+                LastName: "קוריאט",
+                Password: null,
+                Phone: null,
+                Preferences: [1,],
+              },
+            ],
+        })
       })
   }
 
@@ -92,11 +135,7 @@ class NewMeeting extends React.Component {
     });
   }
 
-  // getChosenParticipantsIDs() {
-
-  // }
-
-  sendNewMeetingInfo() {
+  async sendNewMeetingInfo() {
     var NewMeeting = {
       Subject: this.state.subject,
       StartDate: this.state.date,
@@ -110,6 +149,7 @@ class NewMeeting extends React.Component {
     };
     console.warn(NewMeeting);
 
+    // const meetingId = await
     fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/meeting', {
       method: 'POST',
       headers: { "Content-type": "application/json; charset=UTF-8" },
@@ -118,7 +158,9 @@ class NewMeeting extends React.Component {
       .then(res => res.json())
       .then(response => {
       })
-
+      // .then(() => {
+      //   console.warn("meeting id", meetingId);
+      // })
       .catch(error => console.warn('Error:', error.message));
     Alert.alert(
       'הודעה',
@@ -130,13 +172,10 @@ class NewMeeting extends React.Component {
           onPress: () => console.warn('Cancel Pressed'),
           style: 'cancel',
         },
-
       ],
       { cancelable: false },
     );
   }
-
-
 
   //show chosen participants
   renderChosenParticipants() {
@@ -148,27 +187,6 @@ class NewMeeting extends React.Component {
       })
     }
   }
-
-  // componentDidMount() {
-  //   url = "http://proj.ruppin.ac.il/bgroup77/prod/api/participants";
-  //   fetch(url, { method: 'GET' })
-  //     .then(response => response.json())
-  //     .then((response => this.setState({
-  //       participants: response
-  //     })))
-  //     .then((res) => {
-  //       console.warn("participants from api")
-  //     }
-  //     )
-  //     .catch((error) => {
-  //       console.log(error);
-  //     });
-  //   this.state.participants.map((user) => {
-
-  //     this.state.emails.push(user.Email)
-
-  //   });
-  // }
 
   HandlePressRestaurant = () => {
     this.setState({
@@ -206,53 +224,29 @@ class NewMeeting extends React.Component {
     });
   };
 
-  // GetUsers = (emails) => {
-  //   this.setState({
-  //     emails: emails
-  //   });
-  //   console.warn("emails: ", emails);
-  // };
-
-  // onPressSend() {
-
-  //   fetch('../api/meeting', {
-  //     method: 'POST',
-  //     headers: {
-  //       Accept: 'application/json',
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       Subject: this.state.subject,
-  //       // secondParam: 'yourOtherValue',
-  //     }),
-  //   }).then((res) => res.json())
-  //     .then((data) => console.log(data))
-  //     .catch((err) => console.log(err))
+  // renderHeader() {
+  //   return (
+  //     <View style={styles.header}>
+  //       {/* <View style={{ flex: 1 }}>
+  //         <TouchableOpacity onPress={() => this.props.navigation.navigate('')}>
+  //           <Ionicons name="md-arrow-back" size={24} />
+  //         </TouchableOpacity>
+  //       </View> */}
+  //       {/* <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', }}>
+  //         <Text style={styles.title}>פגישה חדשה</Text>
+  //       </View> */}
+  //     </View>
+  //   )
   // }
-
-  renderHeader() {
-    return (
-      <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          {/* <TouchableOpacity onPress={() => this.props.navigation.navigate('')}>
-            <Ionicons name="md-arrow-back" size={24} />
-          </TouchableOpacity> */}
-        </View>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={styles.title}>פגישה חדשה</Text>
-        </View>
-      </View>
-    )
-  }
 
   render() {
     const {
       sort,
       type,
       price,
-      option_full,
-      option_rated,
-      option_free,
+      // option_full,
+      // option_rated,
+      // option_free,
     } = this.props.filters;
 
     const activeType = (key) => type === key;
@@ -269,52 +263,37 @@ class NewMeeting extends React.Component {
       });
     }
     else {
-      this.setState({
-        allusers:
-          [
-            {
-              Address: null,
-              Email: "aviel_iluz@gmail.com",
-              FirstName: "אביאל",
-              Gender: 0,
-              Id: 1,
-              Image: null,
-              LastName: "אילוז",
-              Password: null,
-              Phone: null,
-              Preferences: [1,],
-            },
-            {
-              Address: null,
-              Email: "shlomi@gmail.com",
-              FirstName: "שלומי",
-              Gender: 0,
-              Id: 0,
-              Image: null,
-              LastName: "קוריאט",
-              Password: null,
-              Phone: null,
-              Preferences: [1,],
-            },
-
-          ],
-      })
+      dataForAutocomplete = [
+        {
+          id: 3,
+          name: 'מעיין כהן'
+        },
+        {
+          id: 1,
+          name: 'ליהי שפירא'
+        },
+        {
+          id: 2,
+          name: 'אביאל אילוז'
+        },
+      ]
     }
     console.warn('all users:', this.state.allUsers);
 
     return (
       <SafeAreaView style={styles.container} >
-        {this.renderHeader()}
+        {/* {this.renderHeader()} */}
         < ScrollView style={styles.container} >
-          {/* <View style={styles.section}> */}
-          <View>
-            <Text style={styles.title}>נושא הפגישה</Text>
-          </View>
-          <View>
-            {<Input
-              onChangeText={subject => this.setState({ subject })}
-            />}
-            {console.warn(this.state.subject)}
+          <View style={styles.section}>
+            <View>
+              <Text style={styles.title}>נושא הפגישה</Text>
+            </View>
+            <View>
+              {<Input
+                onChangeText={subject => this.setState({ subject })}
+              />}
+              {/* {console.warn(this.state.subject)} */}
+            </View>
           </View>
           <View style={styles.section}>
             <View>
@@ -323,21 +302,21 @@ class NewMeeting extends React.Component {
             <View>
               <MyDatePicker onDateChange={(date) => { this.setState({ date: date }) }} />
             </View>
-            {console.warn(this.state.date)}
+            {/* {console.warn(this.state.date)} */}
             <View>
               <Text style={styles.title}> שעת התחלה</Text>
             </View>
             <View>
               <MyTimePicker onDateChange={(time) => { this.setState({ startTime: time }) }} />
             </View>
-            {console.warn(this.state.startTime)}
+            {/* {console.warn(this.state.startTime)} */}
             <View>
               <Text style={styles.title}> שעת סיום</Text>
             </View>
             <View>
               <MyTimePicker onDateChange={(time) => { this.setState({ endTime: time }) }} />
             </View>
-            {console.warn(this.state.endTime)}
+            {/* {console.warn(this.state.endTime)} */}
           </View>
           <View >
             <View>
@@ -375,14 +354,12 @@ class NewMeeting extends React.Component {
             </View>
           </View>
           <View style={styles.section}>
-            <View><Text style={styles.title}>:המשתתפים שנבחרו לפגישה</Text></View>
+            <View><Text style={styles.title}>משתתפי הפגישה שנבחרו</Text></View>
             {this.renderChosenParticipants()}
           </View>
-          {/* {console.warn(this.state.allUsers)} */}
-          {/* {console.warn(this.state.emails)} */}
           <View style={styles.section}>
             <View>
-              <Text style={styles.title}>? האם להתמקד בעיר מסוימת לפגישה</Text>
+              <Text style={styles.title}>האם להתמקד בעיר מסוימת לפגישה?</Text>
             </View>
             <View style={styles.group}>
               <TouchableOpacity
@@ -401,7 +378,7 @@ class NewMeeting extends React.Component {
             <View>
               {this.state.specificAreaOn && <Input onChangeText={specificArea => this.setState({ specificArea })} placeholder='הכנס אזור לפגישה' />}
             </View>
-            {console.warn(this.state.specificArea)}
+            {/* {console.warn(this.state.specificArea)} */}
             <View>
             </View>
           </View>
@@ -417,7 +394,7 @@ class NewMeeting extends React.Component {
               >
                 <Text style={[styles.buttonText, type === 'restaurant' ? styles.activeText : null]}>מסעדה</Text>
               </TouchableOpacity>
-              {console.warn(this.state.placeType)}
+              {/* {console.warn(this.state.placeType)} */}
               <TouchableOpacity
                 style={[styles.button, type === 'coffe' ? styles.active : null]}
                 onPress={() => { this.props.setFilters({ type: 'coffe' }); { this.HandlePressCafe() } }}
@@ -454,19 +431,19 @@ class NewMeeting extends React.Component {
                 style={[styles.button, price === '$$$' ? styles.active : null]}
                 onPress={() => { this.props.setFilters({ price: '$$$' }); { this.HandlePressHighPrice() } }}
               >
-                {console.warn(this.state.priceLevel)}
+                {/* {console.warn(this.state.priceLevel)} */}
                 <Text style={[styles.buttonText, price === '$$$' ? styles.activeText : null]}>$$$</Text>
               </TouchableOpacity>
             </View>
           </View>
-          <View>
+          <View style={styles.section}>
             <Text style={styles.title}>הערות</Text>
           </View>
           <View>
             {<Input
               onChangeText={notes => this.setState({ notes })}
             />}
-            {console.warn(this.state.notes)}
+            {/* {console.warn(this.state.notes)} */}
           </View>
           <View>
             <Button

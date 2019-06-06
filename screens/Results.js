@@ -42,21 +42,23 @@ class Results extends React.Component {
     return (
       <View style={styles.headerContainer}>
         <View style={styles.header}>
-          <View style={{ flex: 2, flexDirection: 'row' }}>
-            {/* <View style={styles.settings}>
+          {/* <View style={{ flex: 2, flexDirection: 'row' }}> */}
+          {/* <View style={styles.settings}>
               <View style={styles.location}>
                 <FontAwesome name="location-arrow" size={14} color="white" />
               </View>
             </View> */}
-            <View style={styles.options}>
-              <Text style={{ fontSize: 12, color: '#A5A5A5', marginBottom: 5, }}>
+          {/* <View style={styles.options}> */}
+          {/* <Text style={{ fontSize: 12, color: '#A5A5A5', marginBottom: 5, }}>
                 Detected Location
-              </Text>
-              <Text style={{ fontSize: 14, fontWeight: '300', }}>
-                תוצאות
-              </Text>
-            </View>
+              </Text> */}
+          <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}>
+            <Text style={styles.title}>
+              תוצאות
+                  </Text>
           </View>
+          {/* </View> */}
+          {/* </View> */}
           <View style={styles.settings}>
             {/* <TouchableOpacity onPress={() => this.props.navigation.navigate('Settings')}>
               <Ionicons name="ios-settings" size={24} color="black" />
@@ -84,13 +86,13 @@ class Results extends React.Component {
     return (
       <View style={styles.map}>
         <MapView
-          style={{ flex: 1, height: height * 0.5, width }}
+          style={{ flex: 1, height: height * 0.35, width }}
           showsMyLocationButton
           initialRegion={{
             latitude: 32.304190,
             longitude: 34.871150,
-            latitudeDelta: 0.025,
-            longitudeDelta: 0.025,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
           }}
         >
           <Marker coordinate={this.props.mylocation}>
@@ -292,6 +294,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 14,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: height * 0.1,
+    width: width,
+    paddingHorizontal: 14,
+  },
   tabs: {
     flex: 1,
     flexDirection: 'row',
@@ -355,5 +365,10 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 12,
     backgroundColor: '#3353FB'
-  }
+  },
+  title: {
+    fontSize: 18,
+    marginVertical: 14,
+    // alignItems: 'flex-end'
+  },
 });

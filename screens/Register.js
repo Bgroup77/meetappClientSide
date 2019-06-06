@@ -11,7 +11,6 @@ import {
     TextInput,
     TouchableOpacity,
     Switch,
-    AsyncStorage,
 } from 'react-native';
 import { Button, Input, Icon, Avatar } from 'react-native-elements';
 import { setFilters } from '../modules/campings';
@@ -25,7 +24,7 @@ const { width, height } = Dimensions.get('screen');
 
 const IMAGE_SIZE = width - 80;
 
-class Profile extends Component {
+class Register extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -34,23 +33,12 @@ class Profile extends Component {
         };
     }
 
-    static navigationOptions = {
-        title: 'פרופיל',
-    };
-
-    // getStorageValue = async () => {
-    //     userInfo = await AsyncStorage.getItem(JSON.parse('userInfo'));
-    //     //userToken = JSON.parse(userToken);
-    //     console.warn("user info", userInfo);
+    // static navigationOptions = {
+    //     header: null,
     // };
 
-    componentDidMount() {
-        // this.getStorageValue();
-    }
-
-    _signOutAsync = async () => {
-        await AsyncStorage.clear();
-        this.props.navigation.navigate('Auth');
+    static navigationOptions = {
+        title: 'הרשמה',
     };
 
     insertParticipant = () => {
@@ -182,7 +170,7 @@ class Profile extends Component {
                                 onChangeText={(address) => this.setState({ address })}
                                 value={this.state.address}
                             />
-                            {/* <View style={styles.section}>
+                            <View style={styles.section}>
                                 <View>
                                     <Text style={styles.title} >טלפון </Text>
                                 </View>
@@ -192,7 +180,7 @@ class Profile extends Component {
                                     value={this.state.phone}
                                     style={{ flex: 1, marginTop: 30, left: 50 }}
                                 />
-                            </View> */}
+                            </View>
                             {/* {console.warn(this.state.phone)} */}
                         </View>
                         <View style={styles.section}>
@@ -328,11 +316,9 @@ class Profile extends Component {
                                     // alignItems: 'center',
                                     backgroundColor: '#FF5A76'
                                 }}
-                                title="עדכן פרופיל"
+                                title="שלח"
                                 onPress={() => this.send()}
                             />
-                            <Button title="התנתק מהמערכת" onPress={this._signOutAsync} />
-
                         </View>
                         {/* <Button
                                 containerStyle={{ marginVertical: 20 }}
@@ -375,6 +361,76 @@ class Profile extends Component {
     }
 }
 
+class CustomButton extends Component {
+    constructor() {
+        super();
+
+        this.state = {
+            selected: false,
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            phone: '',
+            gender: -1,
+            address: '',
+            originLocation: '',
+            foodType: '',
+            kosher: false,
+            vegan: false,
+            vegetarian: false,
+            accessibility: false,
+            preferences: [],
+        };
+
+    }
+
+    componentDidMount() {
+        const { selected } = this.props;
+
+        this.setState({
+            selected,
+        });
+    }
+
+    emailHandler = val => {
+        this.setstate({
+            email: val
+        });
+    };
+
+    render() {
+        const { title } = this.props;
+        const { selected } = this.state;
+
+        return (
+            <Button
+                title={title}
+                titleStyle={{ fontSize: 15, color: 'black' }}
+                buttonStyle={
+                    selected
+                        ? {
+                            backgroundColor: 'rgba(171, 189, 219, 1)',
+                            borderRadius: 100,
+                            width: 127,
+                        }
+                        : {
+                            borderWidth: 1,
+                            borderColor: 'black',
+                            borderRadius: 30,
+                            width: 127,
+                            backgroundColor: 'transparent',
+                        }
+                }
+                containerStyle={{ marginRight: 10 }}
+                onPress={() => this.setState({ selected: !selected })}
+            />
+        );
+    }
+
+
+}
+
 const moduleState = state => ({
     filters: state.campings.filters,
     loading: state.campings.loading,
@@ -384,7 +440,7 @@ const moduleActions = {
     setFilters,
 }
 
-export default connect(moduleState, moduleActions)(Profile);
+export default connect(moduleState, moduleActions)(Register);
 
 const styles = StyleSheet.create({
     statusBar: {
