@@ -49,7 +49,6 @@ class Login extends React.Component {
             // const userToken = JSON.parse(retrievedItem);
             // alert(userToken);
 
-
             alert("ברוכים הבאים");
             this.props.navigation.navigate('App');
         }

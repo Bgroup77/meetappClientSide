@@ -6,16 +6,18 @@ import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-
 import Results from '../screens/Results';
 import NewMeeting from '../screens/NewMeeting';
 import Login from '../screens/Login';
 import Profile from '../screens/Profile';
+// import PreferencesFromCreateMeeting from '../screens/PreferencesFromCreateMeeting';
 import Preferences from '../screens/Preferences';
-import MyMeetings from '../screens/MyMeetings';
+import Register from '../screens/Register';
 
 const HomeStack = createStackNavigator({
   Home: HomeScreen,
+  Preferences: Preferences,
+  Results: Results,
 });
 
 HomeStack.navigationOptions = {
@@ -23,11 +25,7 @@ HomeStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={
-        Platform.OS === 'ios'
-          ? `ios-information-circle${focused ? '' : '-outline'}`
-          : 'md-information-circle'
-      }
+      name={'md-home'}
     />
   ),
 };
@@ -41,7 +39,7 @@ ProfileStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === 'ios' ? 'ios-link' : 'md-link'}
+      name={'md-person'}
     />
   ),
 };
@@ -55,14 +53,14 @@ SettingsStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === 'ios' ? 'ios-options' : 'md-options'}
+      name={'md-business'}
     />
   ),
 };
 
-
 const NewMeetingStack = createStackNavigator({
   NewMeeting: NewMeeting,
+  Preferences: Preferences,
 });
 
 NewMeetingStack.navigationOptions = {
@@ -70,18 +68,20 @@ NewMeetingStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === 'ios' ? 'ios-options' : 'md-options'}
+      name={'md-add-circle-outline'}
     />
   ),
 };
 
+
 export default createBottomTabNavigator({
-  NewMeetingStack,
   Results,
-  Login,
+  // Register,
   HomeStack,
-  Preferences,
+  // Results,
   ProfileStack,
+  NewMeetingStack,
   SettingsStack,
+  // Login,
   //MyMeetings
 });

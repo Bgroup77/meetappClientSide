@@ -19,6 +19,10 @@ const INITIAL_STATE = {
     option_full: true,
     option_rated: true,
     option_free: false,
+    kosher: false,
+    vegan: false,
+    vegetarian: false,
+    accessibility: false,
   },
   loading: false,
 };

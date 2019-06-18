@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   ImageBackground,
@@ -9,65 +10,375 @@ import {
   View,
   Dimensions,
   SafeAreaView,
+  AsyncStorage,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { MapView } from 'expo';
 import { Ionicons, FontAwesome, Foundation, SimpleLineIcons } from '@expo/vector-icons';
+//import { Map, GoogleApiWrapper } from 'google-maps-react';
 
 import { setLocation, setFilters, setCampings } from '../modules/campings';
 import * as mock from '../mock/campings';
 
 const { Marker } = MapView;
 const { width, height } = Dimensions.get('screen');
-
-// const App = StackNavigator({
-//   Home: { screen: HomeScreen },
-//   Profile: { screen: ProfileScreen },
-// });
+var googleMapsClient = require('react-native-google-maps-services').createClient({
+  key: 'AIzaSyAQJQRnhGCQj_MLfWgIIaeaPni4Vzw2eMI',
+  Promise: Promise
+});
 
 class Results extends React.Component {
+
   static navigationOptions = {
-    header: null,
+    title: 'בחר מקום לפגישה',
   };
 
-  componentDidMount() {
-    this.props.setCampings(mock.campings);
+  constructor() {
+    super();
+    //setting global variables
+    global.minSumDistances = 1000;
+    global.minVariance = 1000;
+    global.optimalPoint = [];
+    global.allDestinationDistances = [];
+    global.radius = 300;
+    global.strKeywords = '';
+    global.preferencesPerMeetingToSend = [];
+    global.placeType = '';
+    global.meetingPreferences = [];
+    global.mostWantedFoodTypeIndexes = [];
+    global.mostWantedFoodTypeNames = [];
+    global.destinations = [];
+
+    const wrappedCallback = (...args) => this.otherFunc(...args);
+  }
+
+  state = {
+    currentMeetingID: 0,
+    locationsdata: [],
+    latList: [],
+    lngList: [],
+    originsLatLngArr: [],
+    minSumDistances: 1000,
+    minVariance: 1000,
+    // optimalPoint: [],
+    // preferencesPerMeetingToSend:[],
+  }
+
+  async componentDidMount() {
+    await this.getStorageMeetingIDValue();
+
+    //after there are results
+    // this.props.setCampings(mock.campings);
+  }
+
+  getStorageMeetingIDValue = async () => {
+    const currentMeetingID = JSON.parse(await AsyncStorage.getItem('currentMeetingID'));
+    this.setState({
+      currentMeetingID: currentMeetingID
+    })
+    console.warn("CurrentMeetingId", this.state.currentMeetingID);
+    global.placeType = JSON.parse(await AsyncStorage.getItem('currentPlaceType'));
+
+    console.warn("placeType", global.placeType);
+    this.getOriginInfo();
+    //this.getMeetingPreferences();
+  };
+
+  getOriginInfo() {
+    url = "http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/getLocationsByMeeting?meetingId=" + this.state.currentMeetingID;
+    fetch(url, { method: 'GET' })
+      .then(response => response.json())
+      .then((response => {
+        this.setState({
+          locationsdata: response
+        })
+      }
+      ))
+      .then(() => {
+        this.getLatLngArrays();
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+
+  getLatLngArrays() {
+    this.state.locationsdata.map((location) => {
+      this.state.latList.push(location.Latitude);
+      this.state.lngList.push(location.Longitude);
+      this.state.originsLatLngArr.push({ lat: location.Latitude, lng: location.Longitude });
+    });
+    this.calcFirstCenterPoint();
+  };
+
+  calcFirstCenterPoint() {
+    OriginPoints = {
+      //Xarr and Yarr for calculating averages separately for X and Y
+      LatList: this.state.latList,
+      LngList: this.state.lngList
+    }
+    //console.warn("calcFirstCenterPoint-OriginPoints", OriginPoints);
+
+    fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/algorithm/PutOriginPoints', {
+      method: 'POST',
+      headers: { "Content-type": "application/json; charset=UTF-8" },
+      body: JSON.stringify(OriginPoints),
+    })
+      .then(res => res.json())
+      .then(response => {
+        centerPoint = response;
+        // console.warn("response center point: ", centerPoint);
+        firstCenterPoint = { lat: centerPoint[0], lng: centerPoint[1] };
+        // console.warn("first center point: ", firstCenterPoint);
+      })
+      .then(() => {
+        // console.warn("centerPoint", centerPoint);
+        allOptionalCenterPoints = this.generateRandomPoints(centerPoint, 0.5, 3);
+        //console.warn("allOptionalCenterPoints", allOptionalCenterPoints);
+
+        allOptionalCenterPoints.push(firstCenterPoint);
+        //console.warn("allOptionalCenterPointsWithFirstCP", allOptionalCenterPoints);
+        global.destinations = allOptionalCenterPoints;
+        //console.warn("destinations", global.destinations);
+      })
+      .then(() => {
+        this.findDistances(allOptionalCenterPoints);
+      })
+
+      .catch(error => console.warn('Error:', error.message));
+  }
+
+  generateRandomPoints(centerPoint, radius, numOfPoints) {
+    randomPointsArr = [];
+    for (var i = 0; i < numOfPoints; i++) {
+      r = radius * Math.sqrt(Math.random())
+      theta = Math.random() * 2 * Math.PI
+      point = {
+        lat: centerPoint[0] + r * Math.cos(theta),
+        lng: centerPoint[1] + r * Math.sin(theta)
+      }
+      randomPointsArr.push(point);
+    }
+    return randomPointsArr;
+  }
+
+  findDistances(destinations) {
+    var sumDistances = 0;
+    let distancesArr = [];
+    //console.warn("destinations", destinations);
+    //console.warn("this.state.originsLatLngArr", this.state.originsLatLngArr);
+    //console.warn("final dest", destinations);
+    console.warn("final originsLatLngArr", this.state.originsLatLngArr);
+
+    googleMapsClient.distanceMatrix({
+      origins: destinations,
+      destinations: this.state.originsLatLngArr,
+      // avoidHighways: false,
+      // avoidTolls: false
+    })
+      .asPromise()
+      .then((response) => {
+        console.warn("response google matrix", response.json)
+        this.function(response);
+      })
+      .catch((err) => {
+        console.warn("err distance matrix:", err);
+      })
+  }
+
+  function(response) {
+    if (response) {
+      sumDistances = 0;
+      distancesArr = [];
+
+      destinationList = response.json.origin_addresses;
+      originList = response.json.destination_addresses;
+      //console.warn('originList', originList);
+      //console.warn('destinationList', destinationList);
+
+      //find the distance from the current center point to each origin point and display it on a div
+      for (var i = 0; i < destinationList.length; i++) {
+        currentDest = global.destinations[i];
+        // console.warn("currentDest", currentDest);
+        destinationRow = response.json.rows[i].elements;
+        // console.warn("destinationRow", destinationRow);
+
+        for (var j = 0; j < destinationRow.length; j++) {
+          //add current distance to the DistancesSum and to the DistancesArr
+          sumDistances += (destinationRow[j].distance.value) / 1000; //distance in km
+          distancesArr.push((destinationRow[j].distance.value) / 1000);
+          // console.warn("sumDistances", sumDistances);
+          // console.warn("distancesArr", distancesArr);
+        }
+        currentVariance = CalcVariance(distancesArr); // varience of distances arr
+        object = {
+          sumDistances: sumDistances,
+          distancesArr: distancesArr,
+          currentVariance: currentVariance
+        }
+
+        //finding the optimalPoint: minimum distances sum && minimum variance - comparing current destination to past destinations
+        if (object.sumDistances < global.minSumDistances && object.currentVariance < global.minVariance) {
+          global.minSumDistances = object.sumDistances;
+          global.minVariance = object.currentVariance;
+          global.optimalPoint = currentDest;
+
+          //console.warn("optimal Point: ", global.optimalPoint);
+          // console.warn("global minSumDistances: ", global.minSumDistances);
+          //console.warn("global minVariance: ", global.minVariance);
+        }
+        global.allDestinationDistances.push(object);
+      }
+      //console.warn("allDestinationDistances", global.allDestinationDistances);
+      this.getMeetingPreferences();
+    }
+  }
+
+  getMeetingPreferences() {
+    //getting preferences for google nearby places
+    url = "http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/get?meetingId=" + this.state.currentMeetingID;
+    fetch(url, { method: 'GET' })
+      .then(response => response.json())
+      .then((response => {
+        global.meetingPreferences = response
+      }))
+      .then(() => {
+        console.warn("meetingPreferences", global.meetingPreferences);
+      })
+      .then(() => {
+        this.PreferencesPerMeetingToSend();
+      })
+
+      .catch((error) => {
+        console.warn("error from getMeetingPreferences", error);
+      })
+  }
+
+  PreferencesPerMeetingToSend() { //creating an array to send as key word to google
+    if (global.placeType == 'restaurant') {
+      global.meetingPreferences.map((p) => {
+        if (p.Name == 'kosher' || p.Name == 'accessibility' || p.Name == 'vegan' || p.Name == 'vegetarian')
+          global.preferencesPerMeetingToSend.push(p.Name);
+      });
+      console.warn('preferencesPerMeetingToSend', global.preferencesPerMeetingToSend);
+
+      global.strKeywords += "'";
+
+
+      //converting to str - will contain the keys for google places request
+      global.preferencesPerMeetingToSend.map((p) => {
+        global.strKeywords += (p + " AND ");
+      });
+
+      FindMostWantedFoodTypePerMeeting();
+      console.warn("mostWantedFoodTypeIndexes", global.mostWantedFoodTypeIndexes);
+      console.warn("mostWantedFoodTypeNames", global.mostWantedFoodTypeNames);
+      if (global.mostWantedFoodTypeNames.length > 1) {
+        global.strKeywords += "("
+        for (var i = 0; i < global.mostWantedFoodTypeNames.length; i++) {//food types str
+          global.strKeywords += global.mostWantedFoodTypeNames[i] + " OR ";
+        }
+        global.strKeywords = global.strKeywords.slice(0, -4);
+        global.strKeywords += ")"
+      }
+      else {
+        global.strKeywords += " " + global.mostWantedFoodTypeNames[0];
+      }
+      global.strKeywords += "'";
+      console.warn('strKeywords', global.strKeywords);
+    }
+    else if (global.placeType == 'cafe') {
+      for (var i = 0; i < global.meetingPreferences.length; i++) {//insert general preferences
+        if (global.meetingPreferences[i].Name == 'kosher' || global.meetingPreferences[i].Name == 'accessibility' || global.meetingPreferences[i].Name == 'vegan' || global.meetingPreferences[i].Name == 'vegetarian')
+          global.preferencesPerMeetingToSend.push(global.meetingPreferences[i].Name);
+      }
+      console.warn('preferencesPerMeetingToSend', global.preferencesPerMeetingToSend);
+      global.strKeywords += "'";
+
+      //converting to str - will contain the keys for google places request
+      for (var i = 0; i < global.preferencesPerMeetingToSend.length; i++) {//preferences str
+        global.strKeywords += global.preferencesPerMeetingToSend[i] + " AND ";
+      }
+      global.strKeywords = global.strKeywords.slice(0, -5);
+      global.strKeywords += "'";
+      console.warn('strKeywords', global.strKeywords);
+    }
+    else {// placeType = bar
+      for (var i = 0; i < global.meetingPreferences.length; i++) {//insert general preferences
+        if (global.meetingPreferences[i].Name == 'kosher' || global.meetingPreferences[i].Name == 'accessibility')
+          global.preferencesPerMeetingToSend.push(global.meetingPreferences[i].Name);
+      }
+      console.warn('preferencesPerMeetingToSend', global.preferencesPerMeetingToSend);
+      global.strKeywords += "'";
+
+      //converting to str - will contain the keys for google places request
+      for (var i = 0; i < global.preferencesPerMeetingToSend.length; i++) {//preferences str
+        global.strKeywords += global.preferencesPerMeetingToSend[i] + " AND ";
+      }
+      global.strKeywords = global.strKeywords.slice(0, -5);
+      global.strKeywords += "'";
+
+    }
+    console.warn('strKeywords from PreferencesPerMeetingToSend', global.strKeywords);
+    this.generateRequest();
+  }
+
+
+
+  generateRequest() {
+    console.warn("inside");
+
+    optimalPointHardCoded = {
+      lat: 32.1554945,
+      lng: 34.89788340000007
+    }
+    console.warn("optimalPointHardCoded", optimalPointHardCoded);
+
+    // request = {
+    //   location: global.optimalPoint,
+    //   radius: global.radius,
+    //   types: global.placeType,
+    //   keyword: global.strKeywords
+    //   //keyword: 'vegan AND accessibility AND kosher AND (italian OR asian)'
+    // };
+    // 
+
+    googleMapsClient.places({
+      // language: 'iw',
+      // location: global.optimalPoint,
+      location: {
+        lat: 32.1554945,
+        lng: 34.89788340000007
+      },
+      // radius: global.radius,
+      radius: 500,
+      // minprice: 2,
+      // maxprice: 2,
+      keyword: 'vegan AND accessibility',
+      //keyword: global.strKeywords
+      //type: global.placeType,
+
+      // opennow: v.optional(v.boolean),
+      // pagetoken: v.optional(v.string),
+      // retryOptions: v.optional(utils.retryOptions),
+      // timeout: v.optional(v.number),
+      // region: v.optional(v.string)
+    })
+      .asPromise()
+      .then((response) => {
+        console.warn("resonse placesNearby", response.json)
+      })
+
+      .catch((err) => {
+        console.warn("err placesNearby:", err);
+      })
+
+
+
   }
 
   handleTab = (tabKey) => {
     this.props.setFilters({ type: tabKey });
-  }
-
-  renderHeader() {
-    return (
-      <View style={styles.headerContainer}>
-        <View style={styles.header}>
-          {/* <View style={{ flex: 2, flexDirection: 'row' }}> */}
-          {/* <View style={styles.settings}>
-              <View style={styles.location}>
-                <FontAwesome name="location-arrow" size={14} color="white" />
-              </View>
-            </View> */}
-          {/* <View style={styles.options}> */}
-          {/* <Text style={{ fontSize: 12, color: '#A5A5A5', marginBottom: 5, }}>
-                Detected Location
-              </Text> */}
-          <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}>
-            <Text style={styles.title}>
-              תוצאות
-                  </Text>
-          </View>
-          {/* </View> */}
-          {/* </View> */}
-          <View style={styles.settings}>
-            {/* <TouchableOpacity onPress={() => this.props.navigation.navigate('Settings')}>
-              <Ionicons name="ios-settings" size={24} color="black" />
-            </TouchableOpacity> */}
-          </View>
-        </View>
-        {this.renderTabs()}
-      </View>
-    )
   }
 
   renderMap() {
@@ -219,9 +530,12 @@ class Results extends React.Component {
   }
 
   render() {
+
     return (
       <SafeAreaView style={styles.container}>
-        {this.renderHeader()}
+        <View style={styles.headerContainer}>
+          {this.renderTabs()}
+        </View>
         <ScrollView style={styles.container}>
           {this.renderMap()}
           {this.renderList()}
@@ -252,17 +566,18 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     top: 0,
-    height: height * 0.15,
+    height: height * 0.2,
+    height: 0,
     width: width,
   },
-  header: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: height * 0.15,
-    paddingHorizontal: 14,
-  },
+  // header: {
+  //   flex: 1,
+  //   flexDirection: 'row',
+  //   alignItems: 'center',
+  //   justifyContent: 'center',
+  //   height: height * 0.15,
+  //   paddingHorizontal: 14,
+  // },
   location: {
     height: 24,
     width: 24,
@@ -372,3 +687,75 @@ const styles = StyleSheet.create({
     // alignItems: 'flex-end'
   },
 });
+
+//calculate variance of numbers' array
+function CalcVariance(values) {
+  var avg = CalcAverage(values); //calculte avg of distances
+  //console.log('avg', avg);
+  var squareDiffs = values.map(function (value) {
+    var diff = value - avg;
+    var sqrDiff = diff * diff;
+    return sqrDiff;
+  });
+  var avgSquareDiff = CalcAverage(squareDiffs)
+  return avgSquareDiff;
+}
+
+//calculate average of numbers' array
+function CalcAverage(data) {
+  var sum = 0, i;
+  for (i = 0; i < data.length; i += 1) {
+    sum += data[i];
+  }
+  avg = sum / data.length;
+  return avg;
+}
+
+function FindMostWantedFoodTypePerMeeting() {
+  //find the most wanted food type/s of the current meeting as its participants' preferences were returned from DB table - Participant_Preference_Meeting
+  //and after translating it trought Preferences table.
+
+  result = CountFoodTypesPerMeeting(global.meetingPreferences);
+  var foodTypesPreferences = result[0];
+  var foodTypesPreferencesCounts = result[1];
+  global.mostWantedFoodTypeIndexes = multipleMax(foodTypesPreferencesCounts);
+
+  for (var i = 0; i < global.mostWantedFoodTypeIndexes.length; i++) {
+    global.mostWantedFoodTypeNames[i] = foodTypesPreferences[global.mostWantedFoodTypeIndexes[i]].Name;
+  }
+}
+
+function CountFoodTypesPerMeeting(meetingPreferencesArr) {
+  var a = [], b = [], prev;
+  meetingPreferencesArr.sort(function (a, b) {
+    return a.Id - b.Id;
+  });
+  for (var i = 0; i < meetingPreferencesArr.length; i++) {
+    if (meetingPreferencesArr[i].Type == "food type") {
+      if (meetingPreferencesArr[i].Id != 9) {
+        if (meetingPreferencesArr[i].Id !== prev) {
+          a.push(meetingPreferencesArr[i]);
+          b.push(1);
+        } else {
+          b[b.length - 1]++;
+        }
+        prev = meetingPreferencesArr[i].Id;
+      }
+    }
+  }
+  return [a, b]; //returns array of 2 arrays - first arr (in '0' index)- contains all meeting food preferences ids, second (in '1' index)- contains the occurrences count of each meeting's preference
+}
+
+function multipleMax(arr) {
+  var max = -Infinity;
+  var maxValuesArr = [];
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i] === max) {
+      maxValuesArr.push(i);
+    } else if (arr[i] > max) {
+      maxValuesArr = [i];
+      max = arr[i];
+    }
+  }
+  return maxValuesArr;
+}

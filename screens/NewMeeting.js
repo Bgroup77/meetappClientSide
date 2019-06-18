@@ -9,7 +9,8 @@ import {
   SafeAreaView,
   Switch,
   Slider,
-  Alert
+  Alert,
+  AsyncStorage
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Constants } from 'expo';
@@ -25,7 +26,7 @@ import { Input, Button, ListItem } from 'react-native-elements';
 import { InputAutoSuggest } from 'react-native-autocomplete-search';
 import { FlatList } from 'react-native-gesture-handler';
 // import Icon from 'react-native-vector-icons/FontAwesome';
-import Preferences from '../screens/Preferences';
+// import Preferences from './PreferencesFromHomePage';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -65,7 +66,26 @@ class NewMeeting extends React.Component {
   }
 
   //get all users from DB
-  componentWillMount() {
+  async componentWillMount() {
+    await this.getStorageValue();
+  }
+
+  getStorageValue = async () => {
+    userInfo = JSON.parse(await AsyncStorage.getItem('userInfo'));
+    this.setState({
+      userInfo: userInfo,
+      // firstName: userInfo.FirstName,
+      // lastName: userInfo.LastName,
+      // gender: userInfo.Gender,
+      // email: userInfo.Email,
+      // password: userInfo.Password,
+      // address: userInfo.Address,
+    })
+
+    this.getUsersFromDB();
+  };
+
+  getUsersFromDB() {
     url = "http://proj.ruppin.ac.il/bgroup77/prod/api/participants";
     fetch(url, { method: 'GET' })
       .then(response => response.json())
@@ -136,6 +156,9 @@ class NewMeeting extends React.Component {
   }
 
   async sendNewMeetingInfo() {
+    userInfo = JSON.parse(await AsyncStorage.getItem('userInfo'));
+    console.warn("user info", userInfo);
+
     var NewMeeting = {
       Subject: this.state.subject,
       StartDate: this.state.date,
@@ -146,10 +169,10 @@ class NewMeeting extends React.Component {
       Notes: this.state.notes,
       Participants: this.state.chosenParticipantIds,
       PlaceType: this.state.placeType,
+      CreatorEmail: userInfo.Email,
     };
     console.warn(NewMeeting);
 
-    // const meetingId = await
     fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/meeting', {
       method: 'POST',
       headers: { "Content-type": "application/json; charset=UTF-8" },
@@ -157,24 +180,29 @@ class NewMeeting extends React.Component {
     })
       .then(res => res.json())
       .then(response => {
+        let meetingId = response;
+        // console.warn("meetingId", meetingId);
+        AsyncStorage.setItem("currentMeetingID", JSON.stringify(meetingId));
       })
       // .then(() => {
-      //   console.warn("meeting id", meetingId);
+
       // })
+      .then(() => {
+        Alert.alert(
+          'הודעה',
+          'פגישה נוצרה בהצלחה',
+          [
+            { text: 'לחץ להזנת העדפות', onPress: () => this.props.navigation.navigate('Preferences') },
+            {
+              text: 'ביטול',
+              // onPress: () => console.warn('Cancel Pressed'),
+              style: 'cancel',
+            },
+          ],
+          { cancelable: false },
+        );
+      })
       .catch(error => console.warn('Error:', error.message));
-    Alert.alert(
-      'הודעה',
-      'פגישה נוצרה בהצלחה',
-      [
-        { text: 'לחץ להזנת העדפות', onPress: () => this.props.navigation.navigate('Preferences') },
-        {
-          text: 'ביטול',
-          onPress: () => console.warn('Cancel Pressed'),
-          style: 'cancel',
-        },
-      ],
-      { cancelable: false },
-    );
   }
 
   //show chosen participants
@@ -224,21 +252,6 @@ class NewMeeting extends React.Component {
     });
   };
 
-  // renderHeader() {
-  //   return (
-  //     <View style={styles.header}>
-  //       {/* <View style={{ flex: 1 }}>
-  //         <TouchableOpacity onPress={() => this.props.navigation.navigate('')}>
-  //           <Ionicons name="md-arrow-back" size={24} />
-  //         </TouchableOpacity>
-  //       </View> */}
-  //       {/* <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', }}>
-  //         <Text style={styles.title}>פגישה חדשה</Text>
-  //       </View> */}
-  //     </View>
-  //   )
-  // }
-
   render() {
     const {
       sort,
@@ -257,9 +270,10 @@ class NewMeeting extends React.Component {
 
     if (this.state.allUsers !== null) {
       dataForAutocomplete = this.state.allUsers.map((user) => {
-        // i++;
-        userName = user.FirstName + " " + user.LastName
-        return { id: user.Id, name: userName }
+        if (userInfo.Email != user.Email) {
+          userName = user.FirstName + " " + user.LastName
+          return { id: user.Id, name: userName }
+        }
       });
     }
     else {

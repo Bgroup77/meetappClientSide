@@ -7,6 +7,8 @@ import {
     PanResponder
 } from 'react-native'
 import DatePicker from 'react-native-datepicker'
+import Icon from 'react-native-vector-icons/MaterialIcons'
+
 
 export default class MyDatePicker extends Component {
     constructor(props) {
@@ -28,6 +30,19 @@ export default class MyDatePicker extends Component {
                 // maxDate="2016-06-01"
                 confirmBtnText="Confirm"
                 cancelBtnText="Cancel"
+                // iconComponent={
+                //     <Icon
+                //         size={30}
+                //         color='#333333'
+                //         name='date-range'
+                //         color="pink"
+
+                //         position='absolute'
+                //         left='0'
+                //         top='4'
+                //         marginLeft='0'
+                //     />
+                // }
                 customStyles={{
                     dateIcon: {
                         position: 'absolute',
@@ -37,6 +52,10 @@ export default class MyDatePicker extends Component {
                     },
                     dateInput: {
                         marginLeft: 36
+                    },
+                    placeholderText: {
+                        fontSize: 14,
+                        color: '#BEE4ED'
                     }
                     // ... You can check the source to find the other keys.
                 }}

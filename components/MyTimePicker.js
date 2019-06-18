@@ -36,6 +36,10 @@ export default class MyTimePicker extends Component {
                     },
                     dateInput: {
                         marginLeft: 36
+                    },
+                    placeholderText: {
+                        fontSize: 14,
+                        color: '#BEE4ED'
                     }
                     // ... You can check the source to find the other keys.
                 }}

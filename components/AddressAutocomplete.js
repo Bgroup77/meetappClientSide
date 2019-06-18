@@ -8,6 +8,7 @@ const homePlace = { description: 'בית', geometry: { location: { lat: 48.81529
 const workPlace = { description: 'עבודה', geometry: { location: { lat: 48.8496818, lng: 2.2940881 } } };
 
 export default class AddressAutocomplete extends React.Component {
+
   state = {
     originLocation: '',
   }
@@ -18,13 +19,17 @@ export default class AddressAutocomplete extends React.Component {
         placeholder='חפש'
         minLength={2} // minimum length of text to search
         autoFocus={false}
-        listViewDisplayed='auto'
+        returnKeyType={'search'}
+        listViewDisplayed='false'
+        renderDescription={row =>
+          row.description || row.formatted_address || row.name
+        }
         fetchDetails={true}
-        // onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true
-        //   console.log(data);
-        //   console.log(details);
-
-        // }}
+        onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true
+          this.props.addressHandler(data.description)
+          this.props.latHandler(details.geometry.location.lat)
+          this.props.lngHandler(details.geometry.location.lng)
+        }}
 
         getDefaultValue={() => {
           return ''; // text input default value
@@ -35,7 +40,6 @@ export default class AddressAutocomplete extends React.Component {
           language: 'iw', // language of the results
           // types: 
           fields: 'address_component'
-
         }}
 
         styles={{
@@ -49,7 +53,7 @@ export default class AddressAutocomplete extends React.Component {
             color: '#1faadb'
           }
         }}
-
+        enablePoweredByContainer={true}
         currentLocation={true} // Will add a 'Current location' button at the top of the predefined places list
         currentLocationLabel="מיקום נוכחי"
         nearbyPlacesAPI='GoogleReverseGeocoding' // Which API to use: GoogleReverseGeocoding or GooglePlacesSearch
@@ -70,9 +74,8 @@ export default class AddressAutocomplete extends React.Component {
 
         filterReverseGeocodingByTypes={['locality', 'administrative_area_level_3', 'administrative_area_level_1', 'administrative_area_level_2', 'route', 'street_number']} // filter the reverse geocoding results by types - ['locality', 'administrative_area_level_3'] if you want to display only cities
 
-        predefinedPlaces={[homePlace, workPlace]}
-
-        predefinedPlacesAlwaysVisible={true}
+      // predefinedPlaces={[homePlace, workPlace]}
+      // predefinedPlacesAlwaysVisible={true}
       />
 
     );

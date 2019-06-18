@@ -4,7 +4,7 @@ import SearchInput, { createFilter } from 'react-native-search-filter';
 import emails from '../mails-forSearchBarExample';
 const KEYS_TO_FILTERS = ['user.name', 'subject'];
 
-export default class SearchBar extends Component<{}> {
+export default class SearchBar extends Component {
     constructor(props) {
         super(props);
         this.state = {

@@ -1,17 +1,7 @@
 import React, { Component } from 'react';
 import {
-    StyleSheet,
-    Text,
-    View,
-    SafeAreaView,
-    Image,
-    ScrollView,
-    Dimensions,
-    StatusBar,
-    TextInput,
-    TouchableOpacity,
-    Switch,
-    AsyncStorage,
+    StyleSheet, Text, View, SafeAreaView, Image, ScrollView, Dimensions, StatusBar, TextInput,
+    TouchableOpacity, Switch, AsyncStorage
 } from 'react-native';
 import { Button, Input, Icon, Avatar } from 'react-native-elements';
 import { setFilters } from '../modules/campings';
@@ -20,7 +10,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 // import { cacheFonts } from '../helpers/AssetsCaching';
 import { LinearGradient } from "../components/LinearGradient";
 
-// const SCREEN_WIDTH = Dimensions.get('window').width;
 const { width, height } = Dimensions.get('screen');
 
 const IMAGE_SIZE = width - 80;
@@ -29,8 +18,20 @@ class Profile extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            sort: '',
-            // type: '',
+            // sort: '',
+            userInfo: [],
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            address: '',
+            gender: '',
+            foodType: '',
+            kosher: false,
+            vegan: false,
+            vegetarian: false,
+            accessibility: false,
+            preferencesPerMeeting: [],
         };
     }
 
@@ -38,45 +39,109 @@ class Profile extends Component {
         title: 'פרופיל',
     };
 
-    // getStorageValue = async () => {
-    //     userInfo = await AsyncStorage.getItem(JSON.parse('userInfo'));
-    //     //userToken = JSON.parse(userToken);
-    //     console.warn("user info", userInfo);
-    // };
-
-    componentDidMount() {
-        // this.getStorageValue();
+    async componentDidMount() {
+        await this.getStorageValue();
     }
+
+    getStorageValue = async () => {
+        userInfo = JSON.parse(await AsyncStorage.getItem('userInfo'));
+        console.warn("user info", userInfo);
+        this.setState({
+            userInfo: userInfo,
+            firstName: userInfo.FirstName,
+            lastName: userInfo.LastName,
+            gender: userInfo.Gender,
+            email: userInfo.Email,
+            password: userInfo.Password,
+            address: userInfo.Address,
+        })
+
+        // if (this.state.userInfo.gender == 0) this.setState({ gender: 'male' })
+        // else this.setState({ gender: 'female' })
+        // console.warn(this.state.userInfo);
+        this.setPreferencesInStates();
+    };
+
+    setPreferencesInStates() {
+        // var preferences = []
+        console.warn("preferences", userInfo.Preferences);
+        if (this.state.userInfo.Preferences.includes(1)) this.setState({ vegan: true });
+        // console.warn("vegan", this.state.vegan);
+        if (this.state.userInfo.Preferences.includes(2)) this.setState({ vegetarian: true });
+        if (this.state.userInfo.Preferences.includes(3)) this.setState({ accessibility: true });
+        if (this.state.userInfo.Preferences.includes(4)) this.setState({ kosher: true });
+        if (this.state.userInfo.Preferences.includes(5)) this.setState({ foodType: 'italian' });
+        if (this.state.userInfo.Preferences.includes(6)) this.setState({ foodType: 'assian' });
+        if (this.state.userInfo.Preferences.includes(7)) this.setState({ foodType: 'middleEastern' });
+        if (this.state.userInfo.Preferences.includes(8)) this.setState({ foodType: 'meet' });
+        if (this.state.userInfo.Preferences.includes(9)) this.setState({ foodType: 'dontCare' });
+        this.fillProfileButtons();
+    }
+
+    fillProfileButtons() {
+        if (this.state.gender == 0) { this.props.setFilters({ sort: 'male' }); }
+        else { this.props.setFilters({ sort: 'female' }); }
+        if (this.state.foodType == 'italian') { this.props.setFilters({ type: 'italian' }); }
+        else if (this.state.foodType == 'assian') { this.props.setFilters({ type: 'assian' }); }
+        else if (this.state.foodType == 'middleEastern') { this.props.setFilters({ type: 'middleEastern' }); }
+        else if (this.state.foodType == 'meet') { this.props.setFilters({ type: 'meet' }); }
+        else if (this.state.foodType == 'dontCare') { this.props.setFilters({ type: 'dontCare' }); }
+        if (this.state.kosher == true) this.props.setFilters({ kosher: true });
+        if (this.state.vegan == true) this.props.setFilters({ vegan: true });
+        if (this.state.vegetarian == true) this.props.setFilters({ vegetarian: true });
+        if (this.state.accessibility == true) this.props.setFilters({ accessibility: true });
+    }
+
 
     _signOutAsync = async () => {
         await AsyncStorage.clear();
         this.props.navigation.navigate('Auth');
     };
 
-    insertParticipant = () => {
-        var NewParticipant = {
+    //update profile. do not forget: update participant in local storage after updating!!
+    updateProfile() {
+        var preferenceIDs = this.createPreferencesArray();
+        console.warn("preferenceIDs", preferenceIDs);
+
+        var UpdatedParticipant = {
             Email: this.state.email,
             FirstName: this.state.firstName,
             LastName: this.state.lastName,
             Password: this.state.password,
-            Phone: this.state.phone,
-            Gender: this.state.gender,
-            Image: this.state.image,
+            Phone: '1',
             Address: this.state.address,
-            Preferences: ''
+            Gender: this.state.gender,
+            Image: '',
+            Preferences: preferenceIDs,
         };
-        console.warn(NewParticipant);
 
-        fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/participant', {
-            method: 'POST',
+        console.warn("UpdatedParticipant", UpdatedParticipant);
+
+        fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/participant/update', {
+            method: 'PUT',
             headers: { "Content-type": "application/json; charset=UTF-8" },
-            body: JSON.stringify(NewParticipant),
+            body: JSON.stringify(UpdatedParticipant),
         })
-            .then(res => res.json())
-            .then(response => {
+            .then(() => {
+                alert("פרטים עודכנו בהצלחה");
             })
+
             .catch(error => console.warn('Error:', error.message));
-    };
+    }
+
+    createPreferencesArray() {
+        var preferenceIDs = []
+        if (this.state.kosher == true) preferenceIDs.push(4);
+        if (this.state.vegan == true) preferenceIDs.push(1);
+        if (this.state.vegetarian == true) preferenceIDs.push(2);
+        if (this.state.accessibility == true) preferenceIDs.push(3);
+        if (this.state.foodType == 'italian') preferenceIDs.push(5);
+        else if (this.state.foodType == 'assian') preferenceIDs.push(6);
+        else if (this.state.foodType == 'middleEastern') preferenceIDs.push(7);
+        else if (this.state.foodType == 'meet') preferenceIDs.push(8);
+        else if (this.state.foodType == 'dontCare') preferenceIDs.push(9);
+        return preferenceIDs;
+    }
 
     onMaleGenderButtonPress = () => {
         this.setState({
@@ -89,6 +154,7 @@ class Profile extends Component {
             gender: 1
         });
     }
+
 
     render() {
         const {
@@ -217,19 +283,13 @@ class Profile extends Component {
                                     }}
                                 >
                                     <Text style={[styles.buttonText, sort === 'female' ? styles.activeText : null]}>נקבה</Text>
+
                                 </TouchableOpacity>
                             </View>
                         </View>
-                        {/* <View>
-                            <Text style={styles.title}> מין </Text>
-                            <View style={{ flex: 1, flexDirection: 'row' }}>
-                                <CustomButton title="זכר" selected={true} onPress={this.genderHandler} />
-                                <CustomButton title="נקבה" />
-                            </View>
-                        </View> */}
                         <View style={styles.section}>
                             <View>
-                                <Text style={styles.title}>סוג אוכל</Text>
+                                <Text style={styles.title}> סוג אוכל מועדף</Text>
                             </View>
                             <View style={styles.group}>
                                 <TouchableOpacity
@@ -241,7 +301,7 @@ class Profile extends Component {
                                     <View style={{ flexDirection: 'row', }}>
                                         <MaterialIcons name="star" size={24} color={activeType('italian') ? '#FFF' : '#ff5a76'} />
                                     </View>
-                                    <Text style={[styles.buttonText, activeType('italian') ? styles.activeText : null]}>איטלקי</Text>
+                                    <Text style={[styles.buttonTextFoodType, activeType('italian') ? styles.activeText : null]}>אטלקי</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.button, styles.first, activeType('assian') ? styles.active : null]}
@@ -250,7 +310,7 @@ class Profile extends Component {
                                     <View style={{ flexDirection: 'row', }}>
                                         <MaterialIcons name="star" size={24} color={activeType('assian') ? '#FFF' : '#FF5975'} />
                                     </View>
-                                    <Text style={[styles.buttonText, activeType('assian') ? styles.activeText : null]}>אסייתי</Text>
+                                    <Text style={[styles.buttonTextFoodType, activeType('assian') ? styles.activeText : null]}>אסייתי</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.button, styles.first, activeType('middleEastern') ? styles.active : null]}
@@ -259,15 +319,23 @@ class Profile extends Component {
                                     <View style={{ flexDirection: 'row', }}>
                                         <MaterialIcons name="star" size={24} color={activeType('middleEastern') ? '#FFF' : '#FF5975'} />
                                     </View>
-                                    <Text style={[styles.buttonText, activeType('middleEastern') ? styles.activeText : null]}>מזרח תיכוני</Text>
+                                    <Text style={[styles.buttonTextFoodType, activeType('middleEastern') ? styles.activeText : null]}>מזרח תיכוני</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.button, styles.last, activeType('meet') ? styles.active : null]}
                                     onPress={() => { this.props.setFilters({ type: 'meet' }); this.setState({ foodType: 'meet' }) }}
                                 >
                                     <MaterialIcons name="star" size={24} color={activeType('meet') ? '#FFF' : '#FF5975'} />
-                                    <Text style={[styles.buttonText, activeType('meet') ? styles.activeText : null]}>בשרים</Text>
+                                    <Text style={[styles.buttonTextFoodType, activeType('meet') ? styles.activeText : null]}>בשר</Text>
                                 </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.button, styles.last, activeType('dontCare') ? styles.active : null]}
+                                    onPress={() => { this.props.setFilters({ type: 'dontCare' }); this.setState({ foodType: "dontCare" }) }}
+                                >
+                                    <MaterialIcons name="star" size={24} color={activeType('dontCare') ? '#FFF' : '#FF5975'} />
+                                    <Text style={[styles.buttonTextFoodType, activeType('dontCare') ? styles.activeText : null]}>לא אכפת לי</Text>
+                                </TouchableOpacity>
+
                                 {console.warn(this.state.foodType)}
                             </View>
                         </View>
@@ -284,21 +352,28 @@ class Profile extends Component {
                                         onValueChange={() => { this.props.setFilters({ kosher: !kosher }); { this.setState({ kosher: !this.state.kosher }) } }}
                                     />
                                 </View>
+                                {/* {console.warn("kosher?", this.state.kosher)} */}
                                 <View style={styles.option}>
                                     <Text style={{ fontWeight: '500', }}>טבעוני</Text>
                                     <Switch
                                         value={vegan}
                                         trackColor={{ false: "#EAEAED", true: "#FF5975" }}
-                                        onValueChange={() => { this.props.setFilters({ vegan: !vegan }); { this.setState({ vegan: !this.state.vagan }) } }}
+                                        onValueChange={() => { this.props.setFilters({ vegan: !vegan }); { this.setState({ vegan: !this.state.vegan }) } }}
                                     />
+                                    {/* {console.warn("vegan?", this.state.vegan)} */}
+
                                 </View>
                                 <View style={styles.option}>
                                     <Text style={{ fontWeight: '500', }}>צמחוני</Text>
                                     <Switch
                                         value={vegetarian}
                                         trackColor={{ false: "#EAEAED", true: "#FF5975" }}
-                                        onValueChange={() => { this.props.setFilters({ vegetarian: !vegetarian }); { this.setState({ vegetarian: !this.state.vegetarian }) } }}
+                                        onValueChange={() => {
+                                            this.props.setFilters({ vegetarian: !vegetarian });
+                                            { this.setState({ vegetarian: !this.state.vegetarian }) }
+                                        }}
                                     />
+                                    {/* {console.warn("vegetarian?", this.state.vegetarian)} */}
                                 </View>
                                 <View style={styles.option}>
                                     <Text style={{ fontWeight: '500', }}>נגישות</Text>
@@ -308,6 +383,7 @@ class Profile extends Component {
                                         trackColor={{ false: "#EAEAED", true: "#FF5975" }}
                                         onValueChange={() => { this.props.setFilters({ accessibility: !accessibility }); { this.setState({ accessibility: !this.state.accessibility }) } }}
                                     />
+                                    {/* {console.warn("accessibility?", this.state.accessibility)} */}
                                 </View>
                             </View>
                         </View>
@@ -329,47 +405,12 @@ class Profile extends Component {
                                     backgroundColor: '#FF5A76'
                                 }}
                                 title="עדכן פרופיל"
-                                onPress={() => this.send()}
+                                onPress={() => this.updateProfile()}
                             />
                             <Button title="התנתק מהמערכת" onPress={this._signOutAsync} />
-
                         </View>
-                        {/* <Button
-                                containerStyle={{ marginVertical: 20 }}
-                                style={{
-                                    flex: 1,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    left: 65
-                                }}
-                                buttonStyle={{
-                                    height: 55,
-                                    width: width - 160,
-                                    borderRadius: 30,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                }}
-                                linearGradientProps={{
-                                    colors: ['rgb(250, 114, 185)', 'rgb(16, 202, 185)'],
-                                    start: [1, 0],
-                                    end: [0.2, 0],
-                                }}
-                                ViewComponent={LinearGradient}
-                                title="שלח"
-                                titleStyle={{
-                                    // fontFamily: 'regular',
-                                    fontSize: 20,
-                                    color: 'black',
-                                    textAlign: 'center',
-                                }}
-                                onPress={() => { console.log('send'); this.insertParticipant() }}
-                                //onPress={() => { this.props.setFilters({ sort: 'specificArea' }); this.onSpecificAreaButtonPress() }}
-                                activeOpacity={0.5}
-                            /> */}
-
                     </ScrollView>
                 </View>
-
             </SafeAreaView>
         );
     }
@@ -432,6 +473,18 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         alignItems: 'center',
     },
+    buttonText: {
+        textAlign: 'center',
+        fontWeight: '500',
+    },
+    buttonTextFoodType: {
+        textAlign: 'center',
+        fontWeight: '100',
+    },
+    activeText: {
+        color: '#FFF'
+    },
+
     active: {
         backgroundColor: '#FF5A76',
     },

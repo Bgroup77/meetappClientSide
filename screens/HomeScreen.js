@@ -22,11 +22,13 @@ export default class HomeScreen extends React.Component {
     // this.getStorageValue();
 
     this.state = {
-      meetings: [],
+      MeetingsIWasInvited: [],
+      MeetingsICreated: [],
       email: '',
-      userInfo: '',
+      userInfo: [],
       // cardMeetingID: 0,
       currentMeetingID: 0,
+
       // startTime: '',
       // endTime: '',
       // specificLocation: '',
@@ -43,23 +45,41 @@ export default class HomeScreen extends React.Component {
 
   getStorageValue = async () => {
     userToken = await AsyncStorage.getItem('userToken');
-    //userToken = JSON.parse(userToken);
-    console.warn(userToken);
-    this.getMeetings();
+    // this.getMeetingsIWasInvited();
+    this.getUserInfo();
   };
 
-  getMeetings() {
+  getMeetingsIWasInvited() {
     url = "http://proj.ruppin.ac.il/bgroup77/prod/api/participant/meetings?email=" + userToken;
     fetch(url, { method: 'GET' })
       .then(response => response.json())
       .then((response => {
         this.setState({
-          meetings: response
+          MeetingsIWasInvited: response
         })
       }
       ))
       .then(() => {
-        this.getUserInfo();
+        this.getMeetingsICreated();
+      })
+
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+
+  getMeetingsICreated() {
+    url = "http://proj.ruppin.ac.il/bgroup77/prod/api/participant/meetings/creator?email=" + userToken;
+    fetch(url, { method: 'GET' })
+      .then(response => response.json())
+      .then((response => {
+        this.setState({
+          MeetingsICreated: response
+        })
+      }
+      ))
+      .then(() => {
+        console.warn("meetingsICreated", this.state.MeetingsICreated)
       })
       .catch((error) => {
         console.log(error);
@@ -69,7 +89,7 @@ export default class HomeScreen extends React.Component {
 
   getUserInfo() {
     url = "http://proj.ruppin.ac.il/bgroup77/prod/api/participant/details?mail=" + userToken;
-    console.warn(url);
+
     fetch(url, { method: 'GET' })
       .then(response => response.json())
       .then((response => {
@@ -77,11 +97,13 @@ export default class HomeScreen extends React.Component {
           userInfo: response
         }, () => {
           console.warn("user info from state", this.state.userInfo);
-          AsyncStorage.setItem("userInfo", this.state.userInfo);
+          AsyncStorage.setItem("userInfo", JSON.stringify(this.state.userInfo));
         })
       }
       ))
-
+      .then(() => {
+        this.getMeetingsIWasInvited();
+      })
       .catch((error) => {
         console.log(error);
       })
@@ -90,15 +112,19 @@ export default class HomeScreen extends React.Component {
 
   async componentDidMount() {
     await this.getStorageValue();
-    // this.getMeetings();
-    // this.getUserInfo(); //TBD- not working, need to fix get user info method
   }
 
 
-  onPressSetPreferencesButton(PassedMeetingID) {
-    var meetingID = PassedMeetingID
-    AsyncStorage.setItem("currentMeetingID", JSON.stringify(meetingID));
+  onPressSetPreferencesButton(PassedMeetingID, passedPlaceType) {
+    AsyncStorage.setItem("currentMeetingID", JSON.stringify(PassedMeetingID));
+    AsyncStorage.setItem("currentPlaceType", JSON.stringify(passedPlaceType));
     this.props.navigation.navigate('Preferences');
+  }
+
+  onPressGetResultsButton(PassedMeetingID, passedPlaceType) {
+    AsyncStorage.setItem("currentMeetingID", JSON.stringify(PassedMeetingID));
+    AsyncStorage.setItem("currentPlaceType", JSON.stringify(passedPlaceType));
+    this.props.navigation.navigate('Results');
   }
 
   render() {
@@ -115,10 +141,10 @@ export default class HomeScreen extends React.Component {
           </View>
           <View style={styles.helloContainer}>
             <TouchableOpacity >
-              <Text style={styles.helpLinkText} >היי {this.state.userInfo.FirstName}, פגישותייך הקרובות:</Text>
+              <Text style={styles.helpLinkText} >היי {this.state.userInfo.FirstName}, הפגישות אותן יזמת:</Text>
             </TouchableOpacity>
             <View style={styles.section}>
-              {this.state.meetings.map((m, i) => {
+              {this.state.MeetingsICreated.map((m, i) => {
                 //save meeting id in state as card property. later-property will be taken from the card
                 return (
                   <Card key={i} title={m.Subject} >
@@ -129,7 +155,56 @@ export default class HomeScreen extends React.Component {
                       <Text> שעה:   {m.StartHour} </Text>
                       <Text> תאריך:   {m.StartDate} </Text>
                       <Text> הערות:   {m.Notes} </Text>
+                      <Text> סוג מקום:   {m.PlaceType} </Text>
                       {/* {console.warn('status id:', m.StatusID)} */}
+                      {m.StatusID == 1 && <Text> סטאטוס: ממתין להזנת העדפות </Text>}
+                      {m.StatusID == 2 && <Text> סטאטוס: ממתין לבחירת מקום </Text>}
+                      {m.StatusID == 3 && <Text>סטאטוס: פגישה עתידית</Text>}
+                      {m.StatusID == 4 && <Text>סטאטוס: פגישת עבר</Text>}
+                      {/* {console.warn("placeType", m.PlaceType)} */}
+                      <View>
+                        <Button
+                          // large
+                          type="outline"
+                          raised={true}
+                          // buttonStyle={{ backgroundColor: '#BEE4ED' }}
+                          // borderRadius='10'
+                          // borderColor='#fff'
+                          title="הזן העדפות לפגישה"
+                          // onPress={() => this.props.navigation.navigate('Preferences')}
+                          onPress={() => this.onPressSetPreferencesButton(m.Id, m.PlaceType)}
+                        />
+                        <Button
+                          // large
+                          // buttonStyle={{ backgroundColor: '#FF5A76' }}
+                          type="outline"
+                          raised={true}
+                          // buttonStyle={{ backgroundColor: '#BEE4ED' }}
+                          // borderRadius='10'
+                          // borderColor='#fff'
+                          title="הרץ לקבלת תוצאות"
+                          // onPress={() => this.props.navigation.navigate('Preferences')}
+                          onPress={() => this.onPressGetResultsButton(m.Id, m.PlaceType)}
+                        />
+                        {/* {console.warn(m.Id)} */}
+                      </View>
+                    </View>
+                  </Card>
+                );
+              })}
+            </View>
+            <TouchableOpacity >
+              <Text style={styles.helpLinkText} > הפגישות אליהן זומנת:</Text>
+            </TouchableOpacity>
+            <View style={styles.section}>
+              {this.state.MeetingsIWasInvited.map((m, i) => {
+                return (
+                  <Card key={i} title={m.Subject} >
+                    <View key={i}>
+                      <Text> שעה:   {m.StartHour} </Text>
+                      <Text> תאריך:   {m.StartDate} </Text>
+                      <Text> הערות:   {m.Notes} </Text>
+                      <Text> סוג מקום:   {m.PlaceType} </Text>
                       {m.StatusID == 1 && <Text> סטאטוס: ממתין להזנת העדפות </Text>}
                       {m.StatusID == 2 && <Text> סטאטוס: ממתין לבחירת מקום </Text>}
                       {m.StatusID == 3 && <Text>סטאטוס: פגישה עתידית</Text>}
@@ -145,9 +220,19 @@ export default class HomeScreen extends React.Component {
                           // borderColor='#fff'
                           title="הזן העדפות לפגישה"
                           // onPress={() => this.props.navigation.navigate('Preferences')}
-                          onPress={() => this.onPressSetPreferencesButton(m.Id)}
+                          onPress={() => this.onPressSetPreferencesButton(m.Id, m.PlaceType)}
                         />
-                        {/* {console.warn(m.Id)} */}
+                        <Button
+                          // large
+                          // buttonStyle={{ backgroundColor: '#FF5A76' }}
+                          type="outline"
+                          raised={true}
+                          // buttonStyle={{ backgroundColor: '#BEE4ED' }}
+                          // borderRadius='10'
+                          // borderColor='#fff'
+                          title="הרץ לקבלת תוצאות"
+                          onPress={() => this.onPressGetResultsButton(m.Id, m.PlaceType)}
+                        />
                       </View>
                     </View>
                   </Card>
@@ -161,7 +246,6 @@ export default class HomeScreen extends React.Component {
                 title="יצירת פגישה חדשה"
                 onPress={() => this.props.navigation.navigate('NewMeetingStack')}
               />
-              {/* <Button title="התנתק" onPress={this._signOutAsync} /> */}
             </View>
           </View>
         </ScrollView>
