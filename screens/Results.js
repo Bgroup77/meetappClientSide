@@ -48,6 +48,7 @@ class Results extends React.Component {
     global.mostWantedFoodTypeIndexes = [];
     global.mostWantedFoodTypeNames = [];
     global.destinations = [];
+    global.uniquePreferencesPerMeeting = [];
 
     const wrappedCallback = (...args) => this.otherFunc(...args);
   }
@@ -60,6 +61,10 @@ class Results extends React.Component {
     originsLatLngArr: [],
     minSumDistances: 1000,
     minVariance: 1000,
+    placesResults: [],
+    status: 0,
+    optimalPoint: [],
+    statusOptimalPoint: 0,
     // optimalPoint: [],
     // preferencesPerMeetingToSend:[],
   }
@@ -133,7 +138,7 @@ class Results extends React.Component {
       })
       .then(() => {
         // console.warn("centerPoint", centerPoint);
-        allOptionalCenterPoints = this.generateRandomPoints(centerPoint, 0.5, 3);
+        allOptionalCenterPoints = this.generateRandomPoints(centerPoint, 0.5, 2);
         //console.warn("allOptionalCenterPoints", allOptionalCenterPoints);
 
         allOptionalCenterPoints.push(firstCenterPoint);
@@ -179,36 +184,59 @@ class Results extends React.Component {
       .asPromise()
       .then((response) => {
         console.warn("response google matrix", response.json)
-        this.function(response);
+        this.findOptimalPoint(response);
       })
       .catch((err) => {
         console.warn("err distance matrix:", err);
       })
   }
 
-  function(response) {
+  findOptimalPoint(response) {
     if (response) {
-      sumDistances = 0;
-      distancesArr = [];
-
-      destinationList = response.json.origin_addresses;
-      originList = response.json.destination_addresses;
-      //console.warn('originList', originList);
-      //console.warn('destinationList', destinationList);
+      //console.warn("response", response)
+      originList = response.json.origin_addresses;
+      destinationList = response.json.destination_addresses;
+      console.warn('originList', originList); //google's Origins array, in actual-those are the destinations
+      console.warn('destinationList', destinationList); //google's destinations, in actual-those are the origins
 
       //find the distance from the current center point to each origin point and display it on a div
-      for (var i = 0; i < destinationList.length; i++) {
-        currentDest = global.destinations[i];
-        // console.warn("currentDest", currentDest);
-        destinationRow = response.json.rows[i].elements;
-        // console.warn("destinationRow", destinationRow);
 
-        for (var j = 0; j < destinationRow.length; j++) {
+      for (var i = 0; i < originList.length; i++) {
+        flagZeroResults = 0;
+        console.warn("maayan " + i)
+        sumDistances = 0;
+        distancesArr = [];
+        currentLatDest = global.destinations[i].lat
+        currentLngDest = global.destinations[i].lng
+        currentDest = [currentLatDest, currentLngDest];
+        //console.warn("currentDest", currentDest);
+        row = response.json.rows[i].elements; //google's Origins, in actual-those are the destinations
+        console.warn("row before exiting when zero res", row)
+        row.map(row => {
+          if (row.status != "OK") {
+            flagZeroResults = 1;
+            console.warn("flagZeroResults", flagZeroResults)
+            //return false;
+          }
+        })
+
+        if (flagZeroResults == 1) continue;
+
+        console.warn("row after exiting when zero res ", row)
+
+        // row.map(row => {
+        //   if (row.status != 'OK')
+        //     continue;
+        // })
+
+
+        for (var j = 0; j < row.length; j++) { //elenets array
+          // if (row[i].status != 'OK') continue;
           //add current distance to the DistancesSum and to the DistancesArr
-          sumDistances += (destinationRow[j].distance.value) / 1000; //distance in km
-          distancesArr.push((destinationRow[j].distance.value) / 1000);
-          // console.warn("sumDistances", sumDistances);
-          // console.warn("distancesArr", distancesArr);
+          sumDistances += (row[j].distance.value) / 1000; //distance in km
+          distancesArr.push((row[j].distance.value) / 1000);
+          //console.warn("sumDistances", sumDistances);
+          //console.warn("distancesArr", distancesArr);
         }
         currentVariance = CalcVariance(distancesArr); // varience of distances arr
         object = {
@@ -216,14 +244,15 @@ class Results extends React.Component {
           distancesArr: distancesArr,
           currentVariance: currentVariance
         }
-
+        console.warn("object", object);
         //finding the optimalPoint: minimum distances sum && minimum variance - comparing current destination to past destinations
         if (object.sumDistances < global.minSumDistances && object.currentVariance < global.minVariance) {
           global.minSumDistances = object.sumDistances;
           global.minVariance = object.currentVariance;
+
           global.optimalPoint = currentDest;
 
-          //console.warn("optimal Point: ", global.optimalPoint);
+          console.warn("optimal Point: ", global.optimalPoint);
           // console.warn("global minSumDistances: ", global.minSumDistances);
           //console.warn("global minVariance: ", global.minVariance);
         }
@@ -260,13 +289,13 @@ class Results extends React.Component {
         if (p.Name == 'kosher' || p.Name == 'accessibility' || p.Name == 'vegan' || p.Name == 'vegetarian')
           global.preferencesPerMeetingToSend.push(p.Name);
       });
-      console.warn('preferencesPerMeetingToSend', global.preferencesPerMeetingToSend);
+      global.uniquePreferencesPerMeeting = [...new Set(global.preferencesPerMeetingToSend)];
+      console.warn('uniqe preferencesPerMeetingToSend', global.uniquePreferencesPerMeeting);
 
       global.strKeywords += "'";
 
-
       //converting to str - will contain the keys for google places request
-      global.preferencesPerMeetingToSend.map((p) => {
+      global.uniquePreferencesPerMeeting.map((p) => {
         global.strKeywords += (p + " AND ");
       });
 
@@ -292,13 +321,16 @@ class Results extends React.Component {
         if (global.meetingPreferences[i].Name == 'kosher' || global.meetingPreferences[i].Name == 'accessibility' || global.meetingPreferences[i].Name == 'vegan' || global.meetingPreferences[i].Name == 'vegetarian')
           global.preferencesPerMeetingToSend.push(global.meetingPreferences[i].Name);
       }
-      console.warn('preferencesPerMeetingToSend', global.preferencesPerMeetingToSend);
+      global.uniquePreferencesPerMeeting = [...new Set(global.preferencesPerMeetingToSend)];
+      console.warn('uniquePreferencesPerMeeting', global.uniquePreferencesPerMeeting);
+
       global.strKeywords += "'";
 
       //converting to str - will contain the keys for google places request
-      for (var i = 0; i < global.preferencesPerMeetingToSend.length; i++) {//preferences str
-        global.strKeywords += global.preferencesPerMeetingToSend[i] + " AND ";
-      }
+      global.uniquePreferencesPerMeeting.map((p) => {//preferences str
+        global.strKeywords += (p + " AND ");
+      });
+
       global.strKeywords = global.strKeywords.slice(0, -5);
       global.strKeywords += "'";
       console.warn('strKeywords', global.strKeywords);
@@ -308,56 +340,86 @@ class Results extends React.Component {
         if (global.meetingPreferences[i].Name == 'kosher' || global.meetingPreferences[i].Name == 'accessibility')
           global.preferencesPerMeetingToSend.push(global.meetingPreferences[i].Name);
       }
-      console.warn('preferencesPerMeetingToSend', global.preferencesPerMeetingToSend);
+      global.uniquePreferencesPerMeeting = [...new Set(global.preferencesPerMeetingToSend)];
+      console.warn('uniquePreferencesPerMeeting', global.uniquePreferencesPerMeeting);
+
       global.strKeywords += "'";
 
       //converting to str - will contain the keys for google places request
-      for (var i = 0; i < global.preferencesPerMeetingToSend.length; i++) {//preferences str
-        global.strKeywords += global.preferencesPerMeetingToSend[i] + " AND ";
-      }
+      global.uniquePreferencesPerMeeting.map((p) => {//preferences str
+        global.strKeywords += (p + " AND ");
+      });
       global.strKeywords = global.strKeywords.slice(0, -5);
       global.strKeywords += "'";
 
     }
-    console.warn('strKeywords from PreferencesPerMeetingToSend', global.strKeywords);
+    //console.warn('strKeywords from PreferencesPerMeetingToSend', global.strKeywords);
     this.generateRequest();
   }
 
+  // generateRequest() {
+  //   console.warn("inside generateRequest");
 
+  //   optimalPointHardCoded = {
+  //     lat: 32.1554945,
+  //     lng: 34.89788340000007
+  //   }
+  //   console.warn("optimalPointHardCoded", optimalPointHardCoded);
+
+  //   // request = {
+  //   //   location: global.optimalPoint,
+  //   //   radius: global.radius,
+  //   //   types: global.placeType,
+  //   //   keyword: global.strKeywords
+  //   //   //keyword: 'vegan AND accessibility AND kosher AND (italian OR asian)'
+  //   // };
+  //   // 
+
+  //   googleMapsClient.places({
+  //     // language: 'iw',
+  //     // location: global.optimalPoint,
+  //     location: {
+  //       lat: 32.1554945,
+  //       lng: 34.89788340000007
+  //     },
+  //     // radius: global.radius,
+  //     radius: 500,
+  //     // minprice: 2,
+  //     // maxprice: 2,
+  //     keyword: 'vegan AND accessibility',
+  //     //keyword: global.strKeywords
+  //     //type: global.placeType,
+
+  //     // opennow: v.optional(v.boolean),
+  //     // pagetoken: v.optional(v.string),
+  //     // retryOptions: v.optional(utils.retryOptions),
+  //     // timeout: v.optional(v.number),
+  //     // region: v.optional(v.string)
+  //   })
+  //     .asPromise()
+  //     .then((response) => {
+  //       console.warn("resonse placesNearby", response.json)
+  //     })
+
+  //     .catch((err) => {
+  //       console.warn("err placesNearby:", err);
+  //     })
+
+  // }
 
   generateRequest() {
-    console.warn("inside");
+    console.warn("optimalPoint from generateReq", global.optimalPoint);
 
-    optimalPointHardCoded = {
-      lat: 32.1554945,
-      lng: 34.89788340000007
-    }
-    console.warn("optimalPointHardCoded", optimalPointHardCoded);
-
-    // request = {
-    //   location: global.optimalPoint,
-    //   radius: global.radius,
-    //   types: global.placeType,
-    //   keyword: global.strKeywords
-    //   //keyword: 'vegan AND accessibility AND kosher AND (italian OR asian)'
-    // };
-    // 
-
-    googleMapsClient.places({
+    googleMapsClient.placesNearby({
       // language: 'iw',
-      // location: global.optimalPoint,
-      location: {
-        lat: 32.1554945,
-        lng: 34.89788340000007
-      },
+      location: global.optimalPoint,
       // radius: global.radius,
-      radius: 500,
+      radius: 4000,
       // minprice: 2,
       // maxprice: 2,
-      keyword: 'vegan AND accessibility',
-      //keyword: global.strKeywords
-      //type: global.placeType,
-
+      //keyword: '',
+      keyword: global.strKeywords,
+      type: global.placeType,
       // opennow: v.optional(v.boolean),
       // pagetoken: v.optional(v.string),
       // retryOptions: v.optional(utils.retryOptions),
@@ -366,62 +428,110 @@ class Results extends React.Component {
     })
       .asPromise()
       .then((response) => {
-        console.warn("resonse placesNearby", response.json)
-      })
 
+        this.setState({
+          placesResults: response.json,
+          status: 1
+        })
+
+      })
       .catch((err) => {
         console.warn("err placesNearby:", err);
       })
-
-
-
   }
 
   handleTab = (tabKey) => {
     this.props.setFilters({ type: tabKey });
   }
 
+  // renderMap() {
+  //   const campingMarker = ({ type }) => (
+  //     <View style={[styles.marker, styles[`${type}Marker`]]}>
+
+  //       <FontAwesome name="map-marker" size={18} color="#FFF" />
+  //       {/* : <Foundation name="mountains" size={18} color="#FFF" /> */}
+
+  //     </View>
+  //   )
+  //   const { filters, campings } = this.props;
+  //   const mapSpots = filters.type === 'all' ? campings
+  //     : campings.filter(camping => camping.type === filters.type);
+
+  //   return (
+  //     <View style={styles.map}>
+  //       <MapView
+  //         style={{ flex: 1, height: height * 0.35, width }}
+  //         showsMyLocationButton
+  //         initialRegion={{
+  //           latitude: 32.304190,
+  //           longitude: 34.871150,
+  //           latitudeDelta: 0.01,
+  //           longitudeDelta: 0.01,
+  //         }}
+  //       >
+  //         <Marker coordinate={this.props.mylocation}>
+  //           <View style={styles.myMarker}>
+  //             <View style={styles.myMarkerDot} />
+  //           </View>
+  //         </Marker>
+
+  //         {mapSpots.map(marker => (
+  //           <Marker
+  //             key={`marker-${marker.id}`}
+  //             coordinate={marker.latlng}
+  //           >
+  //             {campingMarker(marker)}
+  //           </Marker>
+  //         ))}
+  //       </MapView>
+  //     </View>
+  //   )
+  // }
+
   renderMap() {
-    const campingMarker = ({ type }) => (
-      <View style={[styles.marker, styles[`${type}Marker`]]}>
-
-        <FontAwesome name="map-marker" size={18} color="#FFF" />
-        {/* : <Foundation name="mountains" size={18} color="#FFF" /> */}
-
-      </View>
-    )
-    const { filters, campings } = this.props;
-    const mapSpots = filters.type === 'all' ? campings
-      : campings.filter(camping => camping.type === filters.type);
-
     return (
       <View style={styles.map}>
         <MapView
-          style={{ flex: 1, height: height * 0.35, width }}
+          style={{ flex: 1, height: height * 0.45, width }}
           showsMyLocationButton
-          initialRegion={{
-            latitude: 32.304190,
-            longitude: 34.871150,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
+          region={{
+            latitude: global.optimalPoint[0],
+            longitude: global.optimalPoint[1],
+            // latitude: 32.1554945,
+            // longitude: 34.89788340000007,
+            latitudeDelta: 0.3,
+            longitudeDelta: 0.3,
           }}
         >
-          <Marker coordinate={this.props.mylocation}>
-            <View style={styles.myMarker}>
-              <View style={styles.myMarkerDot} />
-            </View>
-          </Marker>
-
-          {mapSpots.map(marker => (
-            <Marker
-              key={`marker-${marker.id}`}
-              coordinate={marker.latlng}
-            >
-              {campingMarker(marker)}
-            </Marker>
-          ))}
+          {/* <Marker coordinate={{ //marker for center point
+            // latitude: 32.1554945,
+            // longitude: 34.89788340000007,
+            latitude: global.optimalPoint[0],
+            longitude: global.optimalPoint[1],
+          }}
+            // image={require('../assets/images/marker.png')}
+            title='מיקום אופטימלי'
+          >
+          </Marker> */}
+          {console.warn("places-res-from render", this.state.placesResults.results)}
+          {(this.state.status == 1) && this.state.placesResults.results.map((place, i) => {
+            //console.warn("place", place.name);
+            return (
+              <Marker
+                key={i}
+                coordinate={{
+                  latitude: place.geometry.location.lat,
+                  longitude: place.geometry.location.lng
+                }}
+                image={require('../assets/images/marker.png')}
+                title={place.name}
+              >
+              </Marker>
+            )
+          })
+          }
         </MapView>
-      </View>
+      </View >
     )
   }
 
