@@ -12,13 +12,13 @@ import {
   SafeAreaView,
   AsyncStorage,
 } from 'react-native';
-import { connect } from 'react-redux';
+//import { connect } from 'react-redux';
 import { MapView } from 'expo';
 import { Ionicons, FontAwesome, Foundation, SimpleLineIcons } from '@expo/vector-icons';
 //import { Map, GoogleApiWrapper } from 'google-maps-react';
 
-import { setLocation, setFilters, setCampings } from '../modules/campings';
-import * as mock from '../mock/campings';
+//import { setLocation, setFilters, setCampings } from '../modules/campings';
+//import * as mock from '../mock/campings';
 
 const { Marker } = MapView;
 const { width, height } = Dimensions.get('screen');
