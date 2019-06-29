@@ -405,6 +405,13 @@ export default class Results extends React.Component {
           {(this.state.status == 1) && console.log("places-res-from render", this.state.placesResults.results)}
           {(this.state.status == 1) && this.state.placesResults.results.map((place, i) => {
             //console.warn("place", place.name);
+
+            // placeImg = ""
+            // if (global.placeType == 'restaurant') img = 'https://images.rest.co.il/Customers/80020238/ab2b0ca29e4a4c74a98e7cfa5351fecd.jpg'
+            // else if (global.placeType == 'cafe') img = ''
+            // else if (global.placeType == 'pub') img = ''
+            // console.warn("placeImg", placeImg);
+
             return (
               <Marker
                 key={i}
@@ -423,7 +430,6 @@ export default class Results extends React.Component {
           </View>
         </MapView>
         <View>
-
           {
             (this.state.status == 1) &&
             this.state.placesResults.results.map((place, i) => {
@@ -463,46 +469,6 @@ export default class Results extends React.Component {
     )
   }
 
-  //   renderList() {
-  //     return
-  //     (this.state.status == 1) &&
-  //       this.state.placesResults.results.map(
-  //         place => {
-  //           return (
-  //             <View key={`place-${place.id}`} style={styles.place}>
-  //               <ImageBackground
-  //                 style={styles.placeImage}
-  //                 imageStyle={styles.placeImage}
-  //                 source={place.icon}
-  //               />
-  //               <View style={styles.placeDetails}>
-  //                 <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
-  //                   <Text style={{ fontSize: 14, fontWeight: 'bold' }}>
-  //                     {place.name}
-  //                   </Text>
-  //                 </View>
-  //                 <View style={{ flex: 1, flexDirection: 'row', }}>
-  //                   <View style={styles.placeInfo}>
-  //                     <FontAwesome name="star" color="#FFBA5A" size={12} />
-  //                     <Text style={{ marginLeft: 4, color: '#FFBA5A' }}>{place.rating}</Text>
-  //                   </View>
-  //                   {/* <View style={styles.placeInfo}>
-  //                   <FontAwesome name="location-arrow" color="#ff5a76" size={12} />
-  //                   <Text style={{ marginLeft: 4, color: '#ff5a76' }}>{place.distance} ק"מ</Text>*/}
-  //                 </View>
-  //                 <View style={styles.placeInfo}>
-  //                   <Ionicons name="md-pricetag" color="black" size={12} />
-  //                   <Text style={{ marginLeft: 4, color: 'black' }}>{place.price_level}</Text>
-  //                 </View>
-  //               </View>
-  //             </View>
-  //             <View style={{ flex: 0.2, justifyContent: 'center' }}>
-  //               <SimpleLineIcons name="options-vertical" color="#A5A5A5" size={24} />
-  //             </View>
-  //             </View>
-  //           )
-  //   })
-  // }
 
   render() {
     return (

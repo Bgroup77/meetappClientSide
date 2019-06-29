@@ -4,6 +4,7 @@ import { createStackNavigator, createBottomTabNavigator } from 'react-navigation
 
 import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
+import HomeScreenAviel from '../screens/HomeScreenAviel';
 import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import Results from '../screens/Results';
@@ -75,8 +76,9 @@ NewMeetingStack.navigationOptions = {
 
 
 export default createBottomTabNavigator({
-  Results,
+  //Results,
   // Register,
+  //HomeScreenAviel,
   HomeStack,
   // Results,
   ProfileStack,
