@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Alert,
   Image,
   Platform,
   ScrollView,
@@ -7,12 +8,31 @@ import {
   Text,
   TouchableOpacity,
   View,
-  AsyncStorage
+  AsyncStorage,
+  Modal
 } from 'react-native';
 import { WebBrowser } from 'expo';
 import { connect } from 'react-redux';
 import { setFilters } from '../modules/campings';
 import { Card, ListItem, Button, Icon, List, FlatList } from 'react-native-elements';
+
+import Dialog, {
+  DialogTitle,
+  DialogContent,
+  DialogButton,
+  SlideAnimation,
+  ScaleAnimation,
+  FadeAnimation,
+} from 'react-native-popup-dialog';
+//import Modal from "react-native-modal";
+
+const activeType = (key) => type === key;
+const slideAnimation = new SlideAnimation({
+  slideFrom: 'bottom',
+});
+const scaleAnimation = new ScaleAnimation();
+const fadeAnimation = new FadeAnimation({ animationDuration: 50 });
+
 
 class HomeScreen extends React.Component {
 
@@ -20,6 +40,13 @@ class HomeScreen extends React.Component {
     super(props);
     this.onMeetingsCreatedButton = this.onMeetingsCreatedButton.bind(this);
     this.onMeetingsInvitedButton = this.onMeetingsInvitedButton.bind(this);
+    //this.toggleModal = this.toggleModal.bind(this);
+    //this.showSlideAnimationDialog = this.showSlideAnimationDialog.bind(this);
+    //aviel's functions:
+    //this.onApprovedButtonPress = this.onApprovedButtonPress.bind(this);
+    //this.onRejectButtonPress = this.onRejectButtonPress.bind(this);
+    this.onPressParticipantsDetails = this.onPressParticipantsDetails.bind(this);
+    //this.show = this.show.bind(this);
 
     this.state = {
       MeetingsIWasInvited: [],
@@ -27,20 +54,36 @@ class HomeScreen extends React.Component {
       email: '',
       userInfo: [],
       currentMeetingID: 0,
-      meetingsIWascreatedOn: 0,
+      meetingsIWascreatedOn: 1,
       meetingsIWasInvitedOn: 0,
+      modalVisible: false,
+      participantsApprovedStr: "",
+      participantsInsertedPreferencesStr: "",
+      approved: false,
       // startTime: '',
       // endTime: '',
       // specificLocation: '',
       // participants: [],
       // placeId: 0,
       // placeName: '',
+
+      //aviel's
+      participantsApprovedMeeting: [],
+      isDialogVisible: false,
+      acceptParticipantsNames: "",
+      insertedPreferencesNamesState: "",
+      meetingPreferences: [],
     };
   }
 
   static navigationOptions = {
     title: 'מסך הבית',
   };
+
+
+  // showSlideAnimationDialog = () => {
+  //   this.slideAnimationDialog.show();
+  // };
 
 
   getStorageValue = async () => {
@@ -123,10 +166,84 @@ class HomeScreen extends React.Component {
 
   }
 
+  onPressParticipantsDetails(meetingId) {
+    console.warn("meeting ID", meetingId);
+    this.setState({
+      currentMeetingID: meetingId
+    })
+    urlAcceptedMeeting = "http://proj.ruppin.ac.il/bgroup77/prod/api/meeting/GetParticipantsAccepted?meetingId=" + meetingId;
+
+    fetch(urlAcceptedMeeting, { method: 'GET' })
+      .then(response => response.json())
+      .then((response => {
+        this.setState({
+          participantsApprovedMeeting: response
+        }, () => {
+          console.warn("participantsApprovedMeeting", this.state.participantsApprovedMeeting)
+
+          participantsApprovedStr = "המשתתפים שאישרו הגעה: ";
+          participantsApprovedStr += "\n";
+          this.state.participantsApprovedMeeting.map((user, i) => {
+            participantsApprovedStr += user.FirstName + " " + user.LastName + "\n";
+          });
+          this.setState({
+            participantsApprovedStr: participantsApprovedStr
+          })
+
+          this.participantsInsertedPreferences(meetingId);
+
+        }
+        )
+      }
+      ))
+
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+
+  participantsInsertedPreferences(meetingId) {  // get participants with their preferences - per meeting
+    urlPreferencesMeeting = "http://proj.ruppin.ac.il/bgroup77/prod/api/meeting/GetPreferencesParticipantsByMeetingId?meetingId=" + meetingId;
+    fetch(urlPreferencesMeeting, { method: 'GET' })
+      .then(response => response.json())
+      .then((response => {
+        this.setState({
+          meetingPreferences: response
+        })
+      }))
+      .then(() => {
+        console.warn("meetingPreferences", this.state.meetingPreferences);
+        participantsInsertedPreferencesStr = "המשתתפים שהזינו העדפות:";
+        participantsInsertedPreferencesStr += "\n";
+        this.state.meetingPreferences.map((user, i) => {
+          participantsInsertedPreferencesStr += user.FirstName + " " + user.LastName + "\n";
+        });
+        this.setState({
+          participantsInsertedPreferencesStr: participantsInsertedPreferencesStr
+        })
+      })
+      .then(() => {
+        //this.alertStatus();
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+
+  alertStatus() {
+    strAlert = this.state.participantsApprovedStr + " \n " + this.state.participantsInsertedPreferencesStr
+    // this.setState({
+    //   participantsInsertedPreferencesStr: participantsInsertedPreferencesStr
+    // })
+    Alert.alert(
+      'סטטוס הגעת משתתפים',
+      strAlert,
+    );
+  }
+
   async componentDidMount() {
     await this.getStorageValue();
   }
-
 
   onPressSetPreferencesButton(PassedMeetingID, passedPlaceType) {
     AsyncStorage.setItem("currentMeetingID", JSON.stringify(PassedMeetingID));
@@ -140,6 +257,57 @@ class HomeScreen extends React.Component {
     this.props.navigation.navigate('Results');
   }
 
+  onApprovedButtonPress = (meetingI2) => {
+    this.setState({
+      approved: true
+    });
+    var PreferenceParticipantMeetingLocation = {
+      PreferenceId: 11,
+      ParticipantId: 4,
+      MeetingId: meetingI2,
+      LocationId: 22, //will be removed
+      //Location: this.state.originLocation
+    };
+
+    console.warn("PreferenceParticipantMeetingLocation", PreferenceParticipantMeetingLocation);
+
+    fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/UpdateAccept', {
+      method: 'PUT',
+      headers: { "Content-type": "application/json; charset=UTF-8" },
+      body: JSON.stringify(PreferenceParticipantMeetingLocation),
+    })
+      .then(res => res.json())
+      .then(response => {
+      })
+      .catch(error => console.warn('Error:', error.message));
+    alert(
+      'הודעה',
+      'הפגישה אושרה',
+      [
+        { text: 'חזרה לדף הבית', onPress: () => this.props.navigation.navigate('HomeStack') },
+        {
+          text: 'ביטול',
+          style: 'cancel',
+        },
+      ],
+      { cancelable: false },
+    );
+  }
+
+  onRejectButtonPress = () => {
+    this.setState({
+      approved: false
+    });
+  }
+
+  _handleButtonPress = () => {
+    this.setModalVisible(true);
+  };
+
+  setModalVisible = (visible) => {
+    this.setState({ modalVisible: visible });
+  };
+
   render() {
     const {
       sort,
@@ -147,7 +315,15 @@ class HomeScreen extends React.Component {
       // price,
     } = this.props.filters;
 
-    const activeType = (key) => type === key;
+    var modalBackgroundStyle = {
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      flex: 1,
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center'
+    };
+    var innerContainerTransparentStyle = { backgroundColor: '#fff', padding: 20 };
+
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -163,8 +339,6 @@ class HomeScreen extends React.Component {
             <TouchableOpacity >
               <Text style={styles.helloText} >היי {this.state.userInfo.FirstName}</Text>
             </TouchableOpacity>
-
-
             <View style={styles.group}>
               <TouchableOpacity
                 style={[styles.button, styles.first, sort === 'created' ? styles.active : null]}
@@ -173,22 +347,39 @@ class HomeScreen extends React.Component {
                 <Text style={[styles.buttonText, sort === 'created' ? styles.activeText : null]}>פגישות שיזמתי</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.button, sort === 'invited' ? styles.active : null]}
+                style={[styles.button, styles.last, sort === 'invited' ? styles.active : null]}
                 onPress={() => { this.props.setFilters({ sort: 'invited' }); this.onMeetingsInvitedButton() }}
               >
                 <Text style={[styles.buttonText, sort === 'invited' ? styles.activeText : null]}>פגישות שזומנתי</Text>
               </TouchableOpacity>
             </View>
 
-            {(this.state.meetingsIWascreatedOn == 1) &&
+            {//פגישות שיזמתי
+              (this.state.meetingsIWascreatedOn == 1) &&
               <View style={styles.section}>
                 {this.state.MeetingsICreated.map((m, i) => {
+                  subject = 'נושא: ';
+                  subject += m.Subject;
                   return (
-                    <Card key={i} title={m.Subject} >
+                    <Card key={i} title={subject} >
+                      <Modal
+                        width='0.8'
+                        animationType='fade'
+                        transparent={true}
+                        visible={this.state.modalVisible}
+                        onRequestClose={() => this.setModalVisible(false)}
+                      >
+                        <View style={styles.modalContainer}>
+                          <View style={styles.innerContainer}>
+                            <Text style={{ color: '#000000' }}>סטטוס הגעת משתתפים</Text>
+                            <Button title='סגור'
+                              buttonStyle={{ backgroundColor: '#808080', color: '#000000' }}
+
+                              onPress={this.setModalVisible.bind(this, false)} />
+                          </View>
+                        </View>
+                      </Modal>
                       <View key={i}>
-                        {/* <Text>{console.warn(this.props.meetingID)}</Text> */}
-                        {/* {this.setState({ currentMeetingID: m.Id })} */}
-                        {/* {console.warn("currentMeetingID", this.state.currentMeetingID)} */}
                         <Text> שעה:   {m.StartHour} </Text>
                         <Text> תאריך:   {m.StartDate} </Text>
                         <Text> הערות:   {m.Notes} </Text>
@@ -197,26 +388,32 @@ class HomeScreen extends React.Component {
                         {m.PlaceType == "cafe" && <Text> סוג מקום: בית קפה   </Text>}
                         {m.PlaceType == "pub" && <Text> סוג מקום: פאב   </Text>}
 
-                        {/* {console.warn('status id:', m.StatusID)} */}
                         {m.StatusID == 1 && <Text> סטאטוס: ממתין להזנת העדפות </Text>}
                         {m.StatusID == 2 && <Text> סטאטוס: ממתין לבחירת מקום </Text>}
                         {m.StatusID == 3 && <Text>סטאטוס: פגישה עתידית</Text>}
                         {m.StatusID == 4 && <Text>סטאטוס: פגישת עבר</Text>}
                         <View>
+                          <Button title='סטטוס הגעת משתתפים' onPress={() => { this.onPressParticipantsDetails(m.Id); { this._handleButtonPress() } }}
+
+                            buttonStyle={{
+                              //backgroundColor: '#BEE4ED',
+                            }}
+                            type="outline" raised={true}
+                          />
                           <Button
                             // large
                             type="outline"
                             raised={true}
-                            // buttonStyle={{ backgroundColor: '#BEE4ED' }}
+                            //buttonStyle={{ backgroundColor: '#BEE4ED' }}
                             // borderRadius='10'
                             // borderColor='#fff'
+                            //titleStyle={{ fontWeight: 'bold' }
                             title="הזן העדפות לפגישה"
-                            // onPress={() => this.props.navigation.navigate('Preferences')}
                             onPress={() => this.onPressSetPreferencesButton(m.Id, m.PlaceType)}
                           />
                           <Button
                             // large
-                            // buttonStyle={{ backgroundColor: '#FF5A76' }}
+                            //buttonStyle={{ backgroundColor: '#FF5A76' }}
                             type="outline"
                             raised={true}
                             // buttonStyle={{ backgroundColor: '#BEE4ED' }}
@@ -229,16 +426,15 @@ class HomeScreen extends React.Component {
                           {/* {console.warn(m.Id)} */}
                         </View>
                       </View>
+
                     </Card>
                   );
                 })}
               </View>
             }
 
-            {/* <TouchableOpacity>
-              <Text > הפגישות אליהן זומנת:</Text>
-            </TouchableOpacity> */}
-            {(this.state.meetingsIWasInvitedOn == 1) &&
+            {//meetings I was invited
+              (this.state.meetingsIWasInvitedOn == 1) &&
               <View style={styles.section}>
                 {this.state.MeetingsIWasInvited.map((m, i) => {
                   return (
@@ -247,13 +443,37 @@ class HomeScreen extends React.Component {
                         <Text> שעה:   {m.StartHour} </Text>
                         <Text> תאריך:   {m.StartDate} </Text>
                         <Text> הערות:   {m.Notes} </Text>
-                        <Text> סוג מקום:   {m.PlaceType} </Text>
+
+                        {m.PlaceType == "restaurant" && <Text> סוג מקום: מסעדה   </Text>}
+                        {m.PlaceType == "cafe" && <Text> סוג מקום: בית קפה   </Text>}
+                        {m.PlaceType == "pub" && <Text> סוג מקום: פאב   </Text>}
+
                         {m.StatusID == 1 && <Text> סטאטוס: ממתין להזנת העדפות </Text>}
                         {m.StatusID == 2 && <Text> סטאטוס: ממתין לבחירת מקום </Text>}
                         {m.StatusID == 3 && <Text>סטאטוס: פגישה עתידית</Text>}
                         {m.SatusID == 4 && <Text>סטאטוס: פגישת עבר</Text>}
                         <View>
                           <Button
+                            titleStyle={{ fontWeight: 'bold' }}
+                            // large
+                            type="outline"
+                            raised={true}
+                            // buttonStyle={{ backgroundColor: '#BEE4ED' }}
+                            // borderRadius='10'
+                            // borderColor='#fff'
+                            title="אשר"
+                            onPress={() => this.onApprovedButtonPress(m.Id)}
+                          />
+                          {this.state.approved && <Button onPress={() => this.onPressSetPreferencesButton()} title="הזן העדפות לפגישה" type="outline" raised={true} />}
+
+                          <Button
+                            // large
+                            type="outline"
+                            raised={true}
+                            title="דחה"
+                            onPress={() => this.onRejectButtonPress()}
+                          />
+                          {/* <Button
                             // large
                             // buttonStyle={{ backgroundColor: '#FF5A76' }}
                             type="outline"
@@ -264,8 +484,8 @@ class HomeScreen extends React.Component {
                             title="הזן העדפות לפגישה"
                             // onPress={() => this.props.navigation.navigate('Preferences')}
                             onPress={() => this.onPressSetPreferencesButton(m.Id, m.PlaceType)}
-                          />
-                          <Button
+                          /> */}
+                          {/* <Button
                             // large
                             // buttonStyle={{ backgroundColor: '#FF5A76' }}
                             type="outline"
@@ -275,7 +495,7 @@ class HomeScreen extends React.Component {
                             // borderColor='#fff'
                             title="הרץ לקבלת תוצאות"
                             onPress={() => this.onPressGetResultsButton(m.Id, m.PlaceType)}
-                          />
+                          /> */}
                         </View>
                       </View>
                     </Card>
@@ -293,7 +513,7 @@ class HomeScreen extends React.Component {
             </View>
           </View>
         </ScrollView>
-      </View>
+      </View >
     );
   }
 }
@@ -316,6 +536,21 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingTop: 30,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    //backgroundColor: 'white',
+    //backgroundColor: 'rgba(0, 0, 0, 0.5)', //?may
+    flexDirection: 'column',
+    alignItems: 'center'
+  },
+  innerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F5F5', padding: 20,
+    alignSelf: 'stretch',
+    height: 300,
   },
   welcomeContainer: {
     alignItems: 'center',

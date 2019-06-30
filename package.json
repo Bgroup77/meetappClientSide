@@ -28,6 +28,7 @@
     "react-native-elements": "^1.1.0",
     "react-native-google-maps-services": "^0.5.1",
     "react-native-google-places-autocomplete": "^1.3.9",
+    "react-native-modal": "^11.1.0",
     "react-native-popup-dialog": "^0.18.2",
     "react-native-range-slider": "^0.1.2",
     "react-native-scrollable-tab-view": "^0.10.0",

@@ -195,7 +195,6 @@ class NewMeeting extends React.Component {
             { text: 'לחץ להזנת העדפות', onPress: () => this.props.navigation.navigate('Preferences') },
             {
               text: 'ביטול',
-              // onPress: () => console.warn('Cancel Pressed'),
               style: 'cancel',
             },
           ],
@@ -383,7 +382,7 @@ class NewMeeting extends React.Component {
                 <Text style={[styles.buttonText, sort === 'specificArea' ? styles.activeText : null]}>כן</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.button, sort === 'notSpecificArea' ? styles.active : null]}
+                style={[styles.button, styles.last, sort === 'notSpecificArea' ? styles.active : null]}
                 onPress={() => { this.props.setFilters({ sort: 'notSpecificArea' }); this.notOnSpecificAreaButtonPress() }}
               >
                 <Text style={[styles.buttonText, sort === 'notSpecificArea' ? styles.activeText : null]}>לא</Text>
@@ -430,23 +429,23 @@ class NewMeeting extends React.Component {
             </View>
             <View style={styles.group}>
               <TouchableOpacity
-                style={[styles.button, styles.last, price === '$' ? styles.active : null]}
+                style={[styles.button, styles.first, price === '$' ? styles.active : null]}
                 onPress={() => { this.props.setFilters({ price: '$' }); { this.HandlePressLowPrice() } }}
               >
-                <Text style={[styles.buttonText, price === '$' ? styles.activeText : null]}>$</Text>
+                <Text style={[styles.buttonText, price === '$' ? styles.activeText : null]}>נמוך</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.button, price === '$$' ? styles.active : null]}
                 onPress={() => { this.props.setFilters({ price: '$$' }); { this.HandlePressMediumPrice() } }}
               >
-                <Text style={[styles.buttonText, price === '$$' ? styles.activeText : null]}>$$</Text>
+                <Text style={[styles.buttonText, price === '$$' ? styles.activeText : null]}>בינוני</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.button, price === '$$$' ? styles.active : null]}
+                style={[styles.button, styles.last, price === '$$$' ? styles.active : null]}
                 onPress={() => { this.props.setFilters({ price: '$$$' }); { this.HandlePressHighPrice() } }}
               >
                 {/* {console.warn(this.state.priceLevel)} */}
-                <Text style={[styles.buttonText, price === '$$$' ? styles.activeText : null]}>$$$</Text>
+                <Text style={[styles.buttonText, price === '$$$' ? styles.activeText : null]}>יקר</Text>
               </TouchableOpacity>
             </View>
           </View>

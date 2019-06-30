@@ -13,7 +13,7 @@ const INITIAL_STATE = {
     longitude: -122.4384,
   },
   filters: {
-    sort: '',
+    sort: 'created',
     type: 'all', // restaurant/cafe/pub
     price: 'free',
     option_full: true,

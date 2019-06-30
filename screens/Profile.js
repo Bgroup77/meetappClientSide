@@ -276,7 +276,7 @@ class Profile extends Component {
                                     <Text style={[styles.buttonText, sort === 'male' ? styles.activeText : null]}>זכר</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.button, sort === 'female' ? styles.active : null]}
+                                    style={[styles.button, styles.last, sort === 'female' ? styles.active : null]}
                                     onPress={() => {
                                         this.props.setFilters({ sort: 'female' });
                                         this.onFemaleGenderButtonPress()
@@ -293,7 +293,6 @@ class Profile extends Component {
                             </View>
                             <View style={styles.group}>
                                 <TouchableOpacity
-                                    //sort: all, rv
                                     style={[styles.button, styles.first, activeType('italian') ? styles.active : null]}
                                     onPress={() => { this.props.setFilters({ type: 'italian' }); this.setState({ foodType: 'italian' }) }}
                                 >
@@ -304,7 +303,7 @@ class Profile extends Component {
                                     <Text style={[styles.buttonTextFoodType, activeType('italian') ? styles.activeText : null]}>אטלקי</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.button, styles.first, activeType('assian') ? styles.active : null]}
+                                    style={[styles.button, activeType('assian') ? styles.active : null]}
                                     onPress={() => { this.props.setFilters({ type: 'assian' }); this.setState({ foodType: 'assian' }) }}
                                 >
                                     <View style={{ flexDirection: 'row', }}>
@@ -313,7 +312,7 @@ class Profile extends Component {
                                     <Text style={[styles.buttonTextFoodType, activeType('assian') ? styles.activeText : null]}>אסייתי</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.button, styles.first, activeType('middleEastern') ? styles.active : null]}
+                                    style={[styles.button, activeType('middleEastern') ? styles.active : null]}
                                     onPress={() => { this.props.setFilters({ type: 'middleEastern' }); this.setState({ foodType: 'middleEastern' }) }}
                                 >
                                     <View style={{ flexDirection: 'row', }}>
@@ -322,7 +321,7 @@ class Profile extends Component {
                                     <Text style={[styles.buttonTextFoodType, activeType('middleEastern') ? styles.activeText : null]}>מזרח תיכוני</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.button, styles.last, activeType('meet') ? styles.active : null]}
+                                    style={[styles.button, activeType('meet') ? styles.active : null]}
                                     onPress={() => { this.props.setFilters({ type: 'meet' }); this.setState({ foodType: 'meet' }) }}
                                 >
                                     <MaterialIcons name="star" size={24} color={activeType('meet') ? '#FFF' : '#FF5975'} />
@@ -491,6 +490,10 @@ const styles = StyleSheet.create({
     first: {
         borderTopLeftRadius: 13,
         borderBottomLeftRadius: 13,
+    },
+    last: {
+        borderTopRightRadius: 13,
+        borderBottomRightRadius: 13,
     },
     group: {
         flexDirection: 'row',
