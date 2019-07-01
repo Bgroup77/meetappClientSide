@@ -64,6 +64,7 @@ export default class Results extends React.Component {
     status: 0,
     optimalPoint: [],
     statusOptimalPoint: 0,
+    foodTypePreferenceExists: false,
     // optimalPoint: [],
     // preferencesPerMeetingToSend:[],
   }
@@ -96,7 +97,9 @@ export default class Results extends React.Component {
       }
       ))
       .then(() => {
-        this.getLatLngArrays();
+        console.warn("locationsdata", this.state.locationsdata)
+        if (this.state.locationsdata.length == 0) alert("לא הוכנסו מקומות מוצא לפגישה. לא ניתן להביא תוצאות")
+        else this.getLatLngArrays();
       })
       .catch((error) => {
         console.log(error);
@@ -134,7 +137,7 @@ export default class Results extends React.Component {
       })
       .then(() => {
         // console.warn("centerPoint", centerPoint);
-        allOptionalCenterPoints = this.generateRandomPoints(centerPoint, 0.5, 2);
+        allOptionalCenterPoints = this.generateRandomPoints(centerPoint, 0.5, 30);
         //console.warn("allOptionalCenterPoints", allOptionalCenterPoints);
 
         allOptionalCenterPoints.push(firstCenterPoint);
@@ -289,22 +292,32 @@ export default class Results extends React.Component {
         global.strKeywords += (p + " AND ");
       });
 
-      FindMostWantedFoodTypePerMeeting();
-      console.warn("mostWantedFoodTypeIndexes", global.mostWantedFoodTypeIndexes);
-      console.warn("mostWantedFoodTypeNames", global.mostWantedFoodTypeNames);
-      if (global.mostWantedFoodTypeNames.length > 1) {
-        global.strKeywords += "("
-        for (var i = 0; i < global.mostWantedFoodTypeNames.length; i++) {//food types str
-          global.strKeywords += global.mostWantedFoodTypeNames[i] + " OR ";
+      global.meetingPreferences.map((p) => {
+        if (p.Id == 5 || p.Id == 6 || p.Id == 7 || p.Id == 8)
+          this.setState({
+            foodTypePreferenceExists: true
+          })
+      });
+
+      console.warn("foodTypePreferenceExists", this.state.foodTypePreferenceExists)
+      if (this.state.foodTypePreferenceExists == true) {
+        FindMostWantedFoodTypePerMeeting();
+        console.warn("mostWantedFoodTypeIndexes", global.mostWantedFoodTypeIndexes);
+        console.warn("mostWantedFoodTypeNames", global.mostWantedFoodTypeNames);
+        if (global.mostWantedFoodTypeNames.length > 1) {
+          global.strKeywords += "("
+          for (var i = 0; i < global.mostWantedFoodTypeNames.length; i++) {//food types str
+            global.strKeywords += global.mostWantedFoodTypeNames[i] + " OR ";
+          }
+          global.strKeywords = global.strKeywords.slice(0, -4);
+          global.strKeywords += ")"
         }
-        global.strKeywords = global.strKeywords.slice(0, -4);
-        global.strKeywords += ")"
+        else {
+          global.strKeywords += " " + global.mostWantedFoodTypeNames[0];
+        }
+        global.strKeywords += "'";
+        console.warn('strKeywords', global.strKeywords);
       }
-      else {
-        global.strKeywords += " " + global.mostWantedFoodTypeNames[0];
-      }
-      global.strKeywords += "'";
-      console.warn('strKeywords', global.strKeywords);
     }
     else if (global.placeType == 'cafe') {
       for (var i = 0; i < global.meetingPreferences.length; i++) {//insert general preferences
@@ -343,7 +356,7 @@ export default class Results extends React.Component {
       global.strKeywords += "'";
 
     }
-    //console.warn('strKeywords from PreferencesPerMeetingToSend', global.strKeywords);
+    console.warn('strKeywords', global.strKeywords);
     this.generateRequest();
   }
 
@@ -373,7 +386,7 @@ export default class Results extends React.Component {
           placesResults: response.json,
           status: 1
         })
-
+        if (this.state.placesResults.length == 0) alert("no places found in 4k distance")
       })
       .catch((err) => {
         console.warn("err placesNearby:", err);

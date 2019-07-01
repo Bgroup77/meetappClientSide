@@ -22,10 +22,9 @@ class HomeScreen extends React.Component {
     super(props);
     this.onMeetingsCreatedButton = this.onMeetingsCreatedButton.bind(this);
     this.onMeetingsInvitedButton = this.onMeetingsInvitedButton.bind(this);
-    //this.onApprovedButtonPress = this.onApprovedButtonPress.bind(this);
+    this.onApprovedButtonPress = this.onApprovedButtonPress.bind(this);
     //this.onRejectButtonPress = this.onRejectButtonPress.bind(this);
     this.checkParticipantsApprovedMeeting = this.checkParticipantsApprovedMeeting.bind(this);
-    //this.show = this.show.bind(this);
 
     this.state = {
       MeetingsIWasInvited: [],
@@ -38,24 +37,19 @@ class HomeScreen extends React.Component {
       modalVisible: false,
       participantsApprovedStr: "",
       participantsInsertedPreferencesStr: "",
-      approved: false,
-      meetingsIApproved: [75, 140],
+      meetingsIApproved: [140],
       meetingsIRejected: [150, 151],
       meetingsIsetPreferences: [152, 153, 140, 93],
-
-      //didApproveCurrentMeeting: false,
-      // startTime: '',
-      // endTime: '',
-      // specificLocation: '',
-      // participants: [],
-      // placeId: 0,
-      // placeName: '',
-      //aviel's
       participantsApprovedMeeting: [],
       isDialogVisible: false,
       acceptParticipantsNames: "",
       insertedPreferencesNamesState: "",
       meetingPreferences: [],
+      // startTime: '',
+      // endTime: '',
+      // specificLocation: '',
+      // placeId: 0,
+      // placeName: '',
     };
   }
 
@@ -68,6 +62,28 @@ class HomeScreen extends React.Component {
     // this.getMeetingsIWasInvited();
     this.getUserInfo();
   };
+
+  getUserInfo() {
+    url = "http://proj.ruppin.ac.il/bgroup77/prod/api/participant/details?mail=" + userToken;
+
+    fetch(url, { method: 'GET' })
+      .then(response => response.json())
+      .then((response => {
+        this.setState({
+          userInfo: response
+        }, () => {
+          console.warn("user info from state", this.state.userInfo);
+          AsyncStorage.setItem("userInfo", JSON.stringify(this.state.userInfo));
+        })
+      }
+      ))
+      .then(() => {
+        this.getMeetingsIWasInvited();
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
 
   getMeetingsIWasInvited() {
     url = "http://proj.ruppin.ac.il/bgroup77/prod/api/participant/meetings?email=" + userToken;
@@ -100,6 +116,9 @@ class HomeScreen extends React.Component {
       .then(() => {
         console.warn("meetingsICreated", this.state.MeetingsICreated)
       })
+      // .then(() => {
+      // //get arrays
+      // })
       .catch((error) => {
         console.log(error);
       })
@@ -119,27 +138,7 @@ class HomeScreen extends React.Component {
     });
   }
 
-  getUserInfo() {
-    url = "http://proj.ruppin.ac.il/bgroup77/prod/api/participant/details?mail=" + userToken;
 
-    fetch(url, { method: 'GET' })
-      .then(response => response.json())
-      .then((response => {
-        this.setState({
-          userInfo: response
-        }, () => {
-          console.warn("user info from state", this.state.userInfo);
-          AsyncStorage.setItem("userInfo", JSON.stringify(this.state.userInfo));
-        })
-      }
-      ))
-      .then(() => {
-        this.getMeetingsIWasInvited();
-      })
-      .catch((error) => {
-        console.log(error);
-      })
-  }
 
   checkParticipantsApprovedMeeting(meetingId) {
     console.warn("meeting ID", meetingId);
@@ -197,49 +196,76 @@ class HomeScreen extends React.Component {
     this.props.navigation.navigate('Results');
   }
 
-  onApprovedButtonPress = (meetingI2) => {
-    this.setState({
-      approved: true
-    });
-
+  onApprovedButtonPress = (meetindId) => {
     var PreferenceParticipantMeetingLocation = {
       PreferenceId: 11,
-      ParticipantId: 4,
-      MeetingId: meetingI2,
-      LocationId: 22, //will be removed
-      //Location: this.state.originLocation
+      ParticipantId: this.state.userInfo.Id,
+      MeetingId: meetindId,
+      Address: '',
+      Longitude: 1,
+      Latitude: 1,
     };
 
     console.warn("PreferenceParticipantMeetingLocation", PreferenceParticipantMeetingLocation);
 
-    fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/UpdateAccept', {
-      method: 'PUT',
+    fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/PostAccept', {
+      method: 'POST',
       headers: { "Content-type": "application/json; charset=UTF-8" },
       body: JSON.stringify(PreferenceParticipantMeetingLocation),
     })
       .then(res => res.json())
       .then(response => {
+        Alert.alert(
+          'הודעה',
+          'הפגישה אושרה',
+          [
+            { text: 'חזרה לדף הבית', onPress: () => this.props.navigation.navigate('HomeScreen') },
+            {
+              text: 'ביטול',
+              style: 'cancel',
+            },
+          ],
+          { cancelable: false },
+        );
       })
       .catch(error => console.warn('Error:', error.message));
-    alert(
-      'הודעה',
-      'הפגישה אושרה',
-      [
-        { text: 'חזרה לדף הבית', onPress: () => this.props.navigation.navigate('HomeStack') },
-        {
-          text: 'ביטול',
-          style: 'cancel',
-        },
-      ],
-      { cancelable: false },
-    );
   }
 
   onRejectButtonPress = (meetingID) => {
     console.warn("meetingID:", meetingID)
-    // this.setState({
-    //   approved: false
-    // });
+
+    var JsonUpdateReject = {
+      PreferenceId: 10,
+      ParticipantId: this.state.userInfo.Id,
+      MeetingId: meetingID,
+      Address: '',
+      Latitude: 1,
+      Longitude: 1,
+    };
+
+    console.warn("JsonUpdateReject", JsonUpdateReject);
+
+    fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/PostDecline', {
+      method: 'POST',
+      headers: { "Content-type": "application/json; charset=UTF-8" },
+      body: JSON.stringify(JsonUpdateReject),
+    })
+      .then(res => res.json())
+      .then(response => {
+        Alert.alert(
+          'הודעה',
+          'הפגישה נדחתה',
+          [
+            { text: 'חזרה לדף הבית', onPress: () => this.props.navigation.navigate('HomeScreen') },
+            {
+              text: 'ביטול',
+              style: 'cancel',
+            },
+          ],
+          { cancelable: false },
+        );
+      })
+      .catch(error => console.warn('Error:', error.message));
   }
 
   _handleButtonPress = () => {
@@ -436,7 +462,7 @@ class HomeScreen extends React.Component {
                                 <TouchableOpacity
                                   disabled={didApprove}
                                   style={[styles.buttonSmall]}
-                                //onPress={() => this.onApprovedButtonPress(m.Id)}
+                                  onPress={() => this.onApprovedButtonPress(m.Id)}
                                 >
                                   <Text style={[didApprove ? styles.buttonTextDisabled : styles.buttonText]}>אשר</Text>
                                 </TouchableOpacity>
@@ -469,7 +495,6 @@ class HomeScreen extends React.Component {
                               </TouchableOpacity>
                             </View>
                           }
-
 
                         </View>
                       </View>

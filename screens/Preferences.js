@@ -150,27 +150,28 @@ class Preferences extends React.Component {
 
         console.warn("Preferences", Preferences);
 
-        fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation', {
+        fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/PostPreferences', {
             method: 'POST',
             headers: { "Content-type": "application/json; charset=UTF-8" },
             body: JSON.stringify(Preferences),
         })
             .then(res => res.json())
-            .then(response => {
+            .then(res => {
+                Alert.alert(
+                    'הודעה',
+                    'העדפות נוספו בהצלחה',
+                    [
+                        { text: 'חזרה לדף הבית', onPress: () => this.props.navigation.navigate('HomeScreen') },
+                        {
+                            text: 'ביטול',
+                            style: 'cancel',
+                        },
+                    ],
+                    { cancelable: false },
+                );
             })
             .catch(error => console.warn('Error:', error.message));
-        Alert.alert(
-            'הודעה',
-            'העדפות נוספו בהצלחה',
-            [
-                { text: 'חזרה לדף הבית', onPress: () => this.props.navigation.navigate('HomeScreen') },
-                {
-                    text: 'ביטול',
-                    style: 'cancel',
-                },
-            ],
-            { cancelable: false },
-        );
+
     }
     // renderHeader() {
     //     return (
