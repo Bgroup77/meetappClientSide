@@ -16,7 +16,7 @@ import Preferences from '../screens/Preferences';
 import Register from '../screens/Register';
 
 const HomeStack = createStackNavigator({
-  Home: HomeScreen,
+  HomeScreen: HomeScreen,
   Preferences: Preferences,
   Results: Results,
 });

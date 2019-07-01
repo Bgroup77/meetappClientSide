@@ -27,9 +27,9 @@ import AddressAutocomplete from '../components/AddressAutocomplete';
 const { width, height } = Dimensions.get('screen');
 
 class Preferences extends React.Component {
-    static navigationOptions = {
-        header: null,
-    };
+    // static navigationOptions = {
+    //     header: null,
+    // };
 
     state = {
         sort: 'distance',
@@ -39,72 +39,35 @@ class Preferences extends React.Component {
         // minValue: 10,
         // maxValue: 100,
         originLocation: '',
-        lat: '',
-        lng: '',
+        lat: 0,
+        lng: 0,
         foodType: '',
-        dontCare: false,
         kosher: false,
         vegan: false,
         vegetarian: false,
         accessibility: false,
         preferencesPerMeeting: [],
-        lastCreatedByMeMeetingID: 0,
-        userInfo: [],
+        currentMeetingID: 0,
     }
 
-    async componentDidMount() {
-        await this.getStorageMeetingIDValue();
-    }
-
-    getStorageMeetingIDValue = async () => {
-        const meetingId = JSON.parse(await AsyncStorage.getItem('lastCreatedByMeMeetingID'));
-        this.setState({
-            lastCreatedByMeMeetingID: meetingId
-        })
-        console.warn("meetingId", this.state.lastCreatedByMeMeetingID);
-        this.getStorageuserInfoValue();
+    static navigationOptions = {
+        title: 'העדפות לפגישה',
     };
 
-    getStorageuserInfoValue = async () => {
-        userInfo = JSON.parse(await AsyncStorage.getItem('userInfo'));
-        this.setState({ userInfo: userInfo })
-        console.warn("userInfo", this.state.userInfo);
-        this.setPreferencesInStates();
-
-    };
-
-    setPreferencesInStates() {
-        // var preferences = []
-        console.warn("preferences", this.state.userInfo.Preferences);
-        if (this.state.userInfo.Preferences.includes(1)) this.setState({ vegan: true });
-        // console.warn("vegan", this.state.vegan);
-        if (this.state.userInfo.Preferences.includes(2)) this.setState({ vegetarian: true });
-        if (this.state.userInfo.Preferences.includes(3)) this.setState({ accessibility: true });
-        if (this.state.userInfo.Preferences.includes(4)) this.setState({ kosher: true });
-        if (this.state.userInfo.Preferences.includes(5)) this.setState({ foodType: 'italian' });
-        if (this.state.userInfo.Preferences.includes(6)) this.setState({ foodType: 'assian' });
-        if (this.state.userInfo.Preferences.includes(7)) this.setState({ foodType: 'middleEastern' });
-        if (this.state.userInfo.Preferences.includes(8)) this.setState({ foodType: 'meet' });
-        if (this.state.userInfo.Preferences.includes(9)) this.setState({ foodType: 'dontCare' });
-        this.fillProfileButtons();
-    }
-
-    fillProfileButtons() {
-        if (this.state.foodType == 'italian') { this.props.setFilters({ type: 'italian' }); }
-        else if (this.state.foodType == 'assian') { this.props.setFilters({ type: 'assian' }); }
-        else if (this.state.foodType == 'middleEastern') { this.props.setFilters({ type: 'middleEastern' }); }
-        else if (this.state.foodType == 'meet') { this.props.setFilters({ type: 'meet' }); }
-        else if (this.state.foodType == 'dontCare') { this.props.setFilters({ type: 'dontCare' }); }
-        if (this.state.kosher == true) this.props.setFilters({ kosher: true });
-        if (this.state.vegan == true) this.props.setFilters({ vegan: true });
-        if (this.state.vegetarian == true) this.props.setFilters({ vegetarian: true });
-        if (this.state.accessibility == true) this.props.setFilters({ accessibility: true });
+    componentDidMount() {
+        var MeetingID = AsyncStorage.getItem("currentMeetingID");
+        AsyncStorage.getItem('currentMeetingID')
+            .then((currentMeetingID) => {
+                this.setState({
+                    currentMeetingID: currentMeetingID
+                })
+                console.warn("meeting ID from State:", this.state.currentMeetingID)
+            })
     }
 
     addressHandler(loc) {
         this.setState({
             originLocation: loc
-
         });
         return;
     }
@@ -138,13 +101,11 @@ class Preferences extends React.Component {
 
         var Preferences = {
             PreferenceId: preferenceIDs,
-            ParticipantId: userInfo.Id,
-            MeetingId: this.state.lastCreatedByMeMeetingID,
-            Address: this.state.originLocation,
-            Latitude: this.state.lat,
-            Longitude: this.state.lng,
-            // Latitude: 34.22,
-            // Longitude: 35.22,
+            ParticipantId: 4,
+            MeetingId: this.state.currentMeetingID,
+            LocationId: 1, //will be removed
+            Location: this.state.originLocation
+
         };
 
         console.warn("Preferences", Preferences);
@@ -174,7 +135,6 @@ class Preferences extends React.Component {
     renderHeader() {
         return (
             <View style={styles.header}>
-                {console.warn("from create meeting")}
                 {/* <View style={{ flex: 1 }}>
                     <TouchableOpacity onPress={() => this.props.navigation.navigate('')}>
                         <Ionicons name="md-arrow-back" size={24} />
@@ -211,11 +171,7 @@ class Preferences extends React.Component {
                             <Text style={styles.title}>מאיפה אגיע לפגישה?</Text>
                         </View>
                         <View>
-                            <AddressAutocomplete
-                                addressHandler={this.addressHandler.bind(this)}
-                                latHandler={this.latHandler.bind(this)}
-                                lngHandler={this.lngHandler.bind(this)}
-                            />
+                            <AddressAutocomplete addressHandler={this.addressHandler.bind(this)} />
                             {console.warn("origin location", this.state.originLocation)}
                         </View>
                         {//optional- effort mesure
@@ -243,7 +199,7 @@ class Preferences extends React.Component {
                             </View>
                         </View> */}
                     </View>
-                    {/* <View style={styles.section}>
+                    <View style={styles.section}>
                         <View>
                             <Text style={styles.title}>סוג אוכל</Text>
                         </View>
@@ -284,60 +240,8 @@ class Preferences extends React.Component {
                                 <MaterialIcons name="star" size={24} color={activeType('meet') ? '#FFF' : '#FF5975'} />
                                 <Text style={[styles.buttonText, activeType('meet') ? styles.activeText : null]}>בשרים</Text>
                             </TouchableOpacity>
-                   
-
-                        </View>
-                    </View> */}
-                    <View style={styles.section}>
-                        <View>
-                            <Text style={styles.title}> סוג אוכל מועדף</Text>
-                        </View>
-                        <View style={styles.group}>
-                            <TouchableOpacity
-                                //sort: all, rv
-                                style={[styles.button, styles.first, activeType('italian') ? styles.active : null]}
-                                onPress={() => { this.props.setFilters({ type: 'italian' }); this.setState({ foodType: 'italian' }) }}
-                            >
-
-                                <View style={{ flexDirection: 'row', }}>
-                                    <MaterialIcons name="star" size={24} color={activeType('italian') ? '#FFF' : '#ff5a76'} />
-                                </View>
-                                <Text style={[styles.buttonTextFoodType, activeType('italian') ? styles.activeText : null]}>אטלקי</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.button, styles.first, activeType('assian') ? styles.active : null]}
-                                onPress={() => { this.props.setFilters({ type: 'assian' }); this.setState({ foodType: 'assian' }) }}
-                            >
-                                <View style={{ flexDirection: 'row', }}>
-                                    <MaterialIcons name="star" size={24} color={activeType('assian') ? '#FFF' : '#FF5975'} />
-                                </View>
-                                <Text style={[styles.buttonTextFoodType, activeType('assian') ? styles.activeText : null]}>אסייתי</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.button, styles.first, activeType('middleEastern') ? styles.active : null]}
-                                onPress={() => { this.props.setFilters({ type: 'middleEastern' }); this.setState({ foodType: 'middleEastern' }) }}
-                            >
-                                <View style={{ flexDirection: 'row', }}>
-                                    <MaterialIcons name="star" size={24} color={activeType('middleEastern') ? '#FFF' : '#FF5975'} />
-                                </View>
-                                <Text style={[styles.buttonTextFoodType, activeType('middleEastern') ? styles.activeText : null]}>מזרח תיכוני</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.button, styles.last, activeType('meet') ? styles.active : null]}
-                                onPress={() => { this.props.setFilters({ type: 'meet' }); this.setState({ foodType: 'meet' }) }}
-                            >
-                                <MaterialIcons name="star" size={24} color={activeType('meet') ? '#FFF' : '#FF5975'} />
-                                <Text style={[styles.buttonTextFoodType, activeType('meet') ? styles.activeText : null]}>בשר</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.button, styles.last, activeType('dontCare') ? styles.active : null]}
-                                onPress={() => { this.props.setFilters({ type: 'dontCare' }); this.setState({ dontCare: !this.state.dontCare }) }}
-                            >
-                                <MaterialIcons name="star" size={24} color={activeType('dontCare') ? '#FFF' : '#FF5975'} />
-                                <Text style={[styles.buttonTextFoodType, activeType('dontCare') ? styles.activeText : null]}>לא אכפת לי</Text>
-                            </TouchableOpacity>
-                            {console.warn("dontCare", this.state.dontCare)}
                             {/* {console.warn(this.state.foodType)} */}
+
                         </View>
                     </View>
                     <View style={styles.section}>
@@ -447,10 +351,6 @@ const styles = StyleSheet.create({
     buttonText: {
         textAlign: 'center',
         fontWeight: '500',
-    },
-    buttonTextFoodType: {
-        textAlign: 'center',
-        fontWeight: '100',
     },
     active: {
         backgroundColor: '#FF5975',

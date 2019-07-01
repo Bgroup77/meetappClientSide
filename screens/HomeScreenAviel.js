@@ -107,7 +107,6 @@ export default class HomeScreen extends React.Component {
     });
 
     toggleVisible = () => {
-        //console.warn("dialog state",this.state.isDialogVisible)
         this.setState({ isDialogVisible: true });
     };
 
@@ -194,11 +193,9 @@ export default class HomeScreen extends React.Component {
                     });
                     this.setState({
                         acceptParticipantsNames: renderedParticipants
-
                     })
                     Names = this.state.acceptParticipantsNames;
                     console.warn("acceptParticipantsNames: ", this.state.acceptParticipantsNames)
-                    //console.warn("stam ")
                 }
                 )
             }
@@ -206,7 +203,7 @@ export default class HomeScreen extends React.Component {
             .catch((error) => {
                 console.log(error);
             })
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         // get preferences of participants per meeting 
         urlPreferencesMeeting = "http://proj.ruppin.ac.il/bgroup77/prod/api/meeting/GetPreferencesParticipantsByMeetingId?meetingId=" + meetingId;
         fetch(urlPreferencesMeeting, { method: 'GET' })
@@ -342,10 +339,12 @@ export default class HomeScreen extends React.Component {
                                     //save meeting id in state as card property. later-property will be taken from the card
                                     return (
                                         <Card key={i}  >
-                                            <Button title={m.Subject} onPress={() => { this.onPressMeetingDetails(m.Id); { this.toggleVisible() } }} buttonStyle={{
-                                                backgroundColor: '#87CEFA',
-                                            }} type="outline" raised={true}
-                                                titleStyle={{ fontWeight: 'bold', color: '#FFFFFF' }} />
+                                            <Button title={m.Subject} onPress={() => { this.onPressMeetingDetails(m.Id); { this.toggleVisible() } }}
+                                                buttonStyle={{
+                                                    backgroundColor: '#87CEFA',
+                                                }}
+                                                type="outline" raised={true} titleStyle={{ fontWeight: 'bold', color: '#FFFFFF' }}
+                                            />
                                             <View key={i}>
                                                 <Dialog
                                                     width='0.8'
@@ -371,9 +370,6 @@ export default class HomeScreen extends React.Component {
                                                         this.setState({ isDialogVisible: false });
                                                     }}
                                                 >
-                                                    {/* <DialogContent>
-                        <Text>{this.state.acceptParticipantsNames}</Text>
-                      </DialogContent> */}
                                                 </Dialog>
                                                 {/* {this.state.meetingApproved[m]!=null && <Text>"dsadas"</Text>} */}
                                                 {/* <Text>{console.warn(this.props.meetingID)}</Text> */}

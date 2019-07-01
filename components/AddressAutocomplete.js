@@ -3,6 +3,7 @@
 import React from 'react';
 import { Image, Text } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+//import console = require('console');
 
 const homePlace = { description: 'בית', geometry: { location: { lat: 48.8152937, lng: 2.4597668 } } };
 const workPlace = { description: 'עבודה', geometry: { location: { lat: 48.8496818, lng: 2.2940881 } } };
@@ -26,6 +27,7 @@ export default class AddressAutocomplete extends React.Component {
         }
         fetchDetails={true}
         onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true
+          console.warn("data", data)
           this.props.addressHandler(data.description)
           this.props.latHandler(details.geometry.location.lat)
           this.props.lngHandler(details.geometry.location.lng)
