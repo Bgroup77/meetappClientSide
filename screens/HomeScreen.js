@@ -57,6 +57,11 @@ class HomeScreen extends React.Component {
     title: 'מסך הבית',
   };
 
+  async componentDidMount() {
+    await this.getStorageValue();
+  }
+
+
   getStorageValue = async () => {
     userToken = await AsyncStorage.getItem('userToken');
     // this.getMeetingsIWasInvited();
@@ -75,6 +80,76 @@ class HomeScreen extends React.Component {
           console.warn("user info from state", this.state.userInfo);
           AsyncStorage.setItem("userInfo", JSON.stringify(this.state.userInfo));
         })
+      }
+      ))
+      .then(() => {
+        this.getMeetingsIapproved();
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+
+  getMeetingsIapproved() {
+    console.warn("in getMeetingsIapproved");
+    url = "http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/GetMeetingsApprovedPerParticipant?participantId=" + this.state.userInfo.Id;
+    fetch(url, { method: 'GET' })
+      .then(response => response.json())
+      .then((response => {
+        meetingsIapprovedIds = [];
+        response.map(meeting => {
+          meetingsIapprovedIds.push(meeting.Id)
+        })
+        this.setState({
+          meetingsIApproved: meetingsIapprovedIds
+        })
+        console.warn("meetingsIApproved", this.state.meetingsIApproved)
+      }
+      ))
+      .then(() => {
+        this.getMeetingsIrejected();
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+
+  getMeetingsIrejected() {
+    url = "http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/GetMeetingsDeclinePerParticipant?participantId=" + this.state.userInfo.Id;
+    fetch(url, { method: 'GET' })
+      .then(response => response.json())
+      .then((response => {
+        meetingsIrejectedIds = [];
+        response.map(meeting => {
+          meetingsIrejectedIds.push(meeting.Id)
+        })
+        this.setState({
+          meetingsIRejected: meetingsIrejectedIds
+        })
+        console.warn("meetingsIRejected", this.state.meetingsIRejected)
+      }
+      ))
+      .then(() => {
+        this.getMeetingsIsetPreferences();
+      })
+      .catch((error) => {
+        console.warn(error);
+      })
+  }
+
+  getMeetingsIsetPreferences() {
+    url = "http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/GetMeetingsISetPreferences?participantId=" + this.state.userInfo.Id;
+    fetch(url, { method: 'GET' })
+      .then(response => response.json())
+      .then((response => {
+        meetingsIsetPreferenceIds = [];
+        response.map(meeting => {
+          meetingsIsetPreferenceIds.push(meeting.Id)
+        })
+        this.setState({
+          meetingsIsetPreferences: meetingsIsetPreferenceIds
+        })
+        console.warn("meetingsIsetPreferences", this.state.meetingsIsetPreferences)
       }
       ))
       .then(() => {
@@ -116,9 +191,6 @@ class HomeScreen extends React.Component {
       .then(() => {
         console.warn("meetingsICreated", this.state.MeetingsICreated)
       })
-      // .then(() => {
-      // //get arrays
-      // })
       .catch((error) => {
         console.log(error);
       })
@@ -180,9 +252,6 @@ class HomeScreen extends React.Component {
       })
   }
 
-  async componentDidMount() {
-    await this.getStorageValue();
-  }
 
   onPressSetPreferencesButton(PassedMeetingID, passedPlaceType) {
     AsyncStorage.setItem("currentMeetingID", JSON.stringify(PassedMeetingID));
