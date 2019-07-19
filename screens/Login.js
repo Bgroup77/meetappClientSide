@@ -1,15 +1,18 @@
 import React, { Component } from 'react';
-import { Alert, TextInput, View, StyleSheet, AsyncStorage, Image, ActivityIndicator, StatusBar } from 'react-native';
+import { Text, Alert, TextInput, View, StyleSheet, AsyncStorage, Image, ActivityIndicator, StatusBar } from 'react-native';
 import ActionButton from 'react-native-action-button';
 import { Input, Button, Icon } from 'react-native-elements';
+import { Permissions, Notifications } from 'expo';
 var firstPage = '';
 import { createStackNavigator, createSwitchNavigator, createAppContainer } from 'react-navigation';
 
 class Login extends React.Component {
     constructor(props) {
         super(props);
+        this._isMounted = false;
         this.checkAuthentic = this.checkAuthentic.bind(this);
         this.state = {
+            token: '',
             ifExists: false,
             fontLoaded: false,
             email: '',
@@ -17,12 +20,21 @@ class Login extends React.Component {
             password: '',
             login_failed: false,
             showLoading: false,
+            hello: ''
         };
     }
 
     static navigationOptions = {
         title: 'התחבר',
     };
+
+    componentDidMount() {
+        this._isMounted = true;
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
+    }
 
     validateEmail(email) {
         var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -37,22 +49,59 @@ class Login extends React.Component {
         });
     }
 
-
     checkAuthentic() {
         console.log(this.state.ifExists);
         if (this.state.ifExists == true) {
             console.log(this.state.ifExists);
             console.warn("state email", this.state.email);
             AsyncStorage.setItem("userToken", this.state.email);
-
-            // const retreivedItem = AsyncStorage.getItem('userToken');
-            // const userToken = JSON.parse(retrievedItem);
-            // alert(userToken);
-
+            this.registerForPushNotifications()
             alert("ברוכים הבאים");
             this.props.navigation.navigate('App');
+
         }
         else { alert("האימייל ו/או הסיסמא שגויים"); }
+    }
+
+    //push
+    async registerForPushNotifications() {
+        const { status } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
+        console.warn("status", status)
+
+        if (status !== 'granted') {
+            const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+            if (status !== 'granted') {
+                return;
+            }
+        }
+
+        const token = await Notifications.getExpoPushTokenAsync();
+        console.warn("token", token)
+
+        this.subscription = Notifications.addListener(this.handleNotification);
+
+        this._isMounted && this.setState({
+            token: token
+        })
+
+        // console.warn("hello", this.state.hello)
+        console.warn("token state", this.state.token)
+
+        this.updateToken(token);
+    }
+
+    updateToken(token) {
+        console.warn("token from update token", token)
+        fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/Participant/UpdateToken?Token=' + token + "&email=" + this.state.email, {
+            method: 'PUT',
+            headers: { "Content-type": "application/json; charset=UTF-8" },
+            body: JSON.stringify({}),
+        })
+            .then(response => { })
+            .then(() => {
+                console.warn("success update token")
+            })
+            .catch(error => console.warn('Error:', error.message));
     }
 
     onLogin() {
@@ -128,7 +177,6 @@ class Login extends React.Component {
                             type="font-awesome"
                             color="#FF5975"
                             size={25}
-                        // color="rgba(171, 189, 219, 1)"
                         />
                     }
                     containerStyle={{ marginVertical: 10 }}
@@ -165,6 +213,8 @@ class Login extends React.Component {
                     containerStyle={{ marginVertical: 10 }}
                     titleStyle={{ fontWeight: 'bold', color: '#5DBCD2' }}
                 />
+                <Text>{"\n"}</Text>
+                <Text style={styles.text} onPress={() => this.props.navigation.navigate('Register')} >לא רשום? לחץ כאן להרשמה</Text>
 
             </View>
         );
@@ -195,6 +245,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'black',
         marginBottom: 10,
+    },
+    text: {
+        textDecorationLine: 'underline',
+        color: '#3247D5',
     },
     welcomeContainer: {
         alignItems: 'center',

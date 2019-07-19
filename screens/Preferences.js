@@ -50,6 +50,7 @@ class Preferences extends React.Component {
         preferencesPerMeeting: [],
         currentMeetingID: 0,
         userInfo: [],
+        didSetPreferneces: false
     }
 
     static navigationOptions = {
@@ -155,13 +156,18 @@ class Preferences extends React.Component {
             headers: { "Content-type": "application/json; charset=UTF-8" },
             body: JSON.stringify(Preferences),
         })
-            .then(res => res.json())
+            .then(() => {
+                AsyncStorage.setItem("lastMeetingIsetPreferences", JSON.stringify(this.state.currentMeetingID));
+            }
+
+            )
             .then(res => {
+                // alert("העדפות נוספו בהצלחה")
                 Alert.alert(
                     'הודעה',
-                    'העדפות נוספו בהצלחה',
+                    'העדפות הוזנו בהצלחה',
                     [
-                        { text: 'חזרה לדף הבית', onPress: () => this.props.navigation.navigate('HomeScreen') },
+                        { text: 'לחץ למעבר לדף הבית', onPress: () => this.props.navigation.navigate('HomeScreen') },
                         {
                             text: 'ביטול',
                             style: 'cancel',
@@ -173,22 +179,7 @@ class Preferences extends React.Component {
             .catch(error => console.warn('Error:', error.message));
 
     }
-    // renderHeader() {
-    //     return (
-    //         <View style={styles.header}>
-    //             {console.warn("from create meeting")}
-    //             {/* <View style={{ flex: 1 }}>
-    //                 <TouchableOpacity onPress={() => this.props.navigation.navigate('')}>
-    //                     <Ionicons name="md-arrow-back" size={24} />
-    //                 </TouchableOpacity>
-    //             </View> */}
-    //             <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', }}>
-    //                 <Text style={styles.title}>  העדפות לפגישה </Text>
-    //             </View>
-    //             {/* TBD- add meeting subject */}
-    //         </View>
-    //     )
-    // }
+
 
     render() {
         const {
@@ -302,16 +293,16 @@ class Preferences extends React.Component {
                             >
 
                                 <View style={{ flexDirection: 'row', }}>
-                                    <MaterialIcons name="star" size={24} color={activeType('italian') ? '#FFF' : '#ff5a76'} />
+                                    <MaterialIcons name="star" size={26} color={activeType('italian') ? '#FFF' : '#ff5a76'} />
                                 </View>
-                                <Text style={[styles.buttonTextFoodType, activeType('italian') ? styles.activeText : null]}>אטלקי</Text>
+                                <Text style={[styles.buttonTextFoodType, activeType('italian') ? styles.activeText : null]}>איטלקי</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.button, styles.first, activeType('assian') ? styles.active : null]}
                                 onPress={() => { this.props.setFilters({ type: 'assian' }); this.setState({ foodType: 'assian' }) }}
                             >
                                 <View style={{ flexDirection: 'row', }}>
-                                    <MaterialIcons name="star" size={24} color={activeType('assian') ? '#FFF' : '#FF5975'} />
+                                    <MaterialIcons name="star" size={26} color={activeType('assian') ? '#FFF' : '#FF5975'} />
                                 </View>
                                 <Text style={[styles.buttonTextFoodType, activeType('assian') ? styles.activeText : null]}>אסייתי</Text>
                             </TouchableOpacity>
@@ -320,7 +311,7 @@ class Preferences extends React.Component {
                                 onPress={() => { this.props.setFilters({ type: 'middleEastern' }); this.setState({ foodType: 'middleEastern' }) }}
                             >
                                 <View style={{ flexDirection: 'row', }}>
-                                    <MaterialIcons name="star" size={24} color={activeType('middleEastern') ? '#FFF' : '#FF5975'} />
+                                    <MaterialIcons name="star" size={26} color={activeType('middleEastern') ? '#FFF' : '#FF5975'} />
                                 </View>
                                 <Text style={[styles.buttonTextFoodType, activeType('middleEastern') ? styles.activeText : null]}>מזרח תיכוני</Text>
                             </TouchableOpacity>
@@ -328,18 +319,17 @@ class Preferences extends React.Component {
                                 style={[styles.button, styles.last, activeType('meet') ? styles.active : null]}
                                 onPress={() => { this.props.setFilters({ type: 'meet' }); this.setState({ foodType: 'meet' }) }}
                             >
-                                <MaterialIcons name="star" size={24} color={activeType('meet') ? '#FFF' : '#FF5975'} />
-                                <Text style={[styles.buttonTextFoodType, activeType('meet') ? styles.activeText : null]}>בשר</Text>
+                                <MaterialIcons name="star" size={26} color={activeType('meet') ? '#FFF' : '#FF5975'} />
+                                <Text style={[styles.buttonTextFoodType, activeType('meet') ? styles.activeText : null]}>בשרי</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.button, styles.last, activeType('dontCare') ? styles.active : null]}
                                 onPress={() => { this.props.setFilters({ type: 'dontCare' }); this.setState({ dontCare: !this.state.dontCare }) }}
                             >
-                                <MaterialIcons name="star" size={24} color={activeType('dontCare') ? '#FFF' : '#FF5975'} />
-                                <Text style={[styles.buttonTextFoodType, activeType('dontCare') ? styles.activeText : null]}>לא אכפת לי</Text>
+                                <MaterialIcons name="star" size={26} color={activeType('dontCare') ? '#FFF' : '#FF5975'} />
+                                <Text style={[styles.buttonTextFoodType, activeType('dontCare') ? styles.activeText : null]}>זורם על הכל</Text>
                             </TouchableOpacity>
                             {console.warn("dontCare", this.state.dontCare)}
-                            {/* {console.warn(this.state.foodType)} */}
                         </View>
                     </View>
                     <View style={styles.section}>
@@ -442,7 +432,7 @@ const styles = StyleSheet.create({
     },
     button: {
         flex: 1,
-        padding: 14,
+        padding: 12,
         alignContent: 'center',
         alignItems: 'center',
     },

@@ -11,6 +11,7 @@ import {
     TextInput,
     TouchableOpacity,
     Switch,
+    Alert,
 } from 'react-native';
 import { Button, Input, Icon, Avatar } from 'react-native-elements';
 import { setFilters } from '../modules/campings';
@@ -29,42 +30,76 @@ class Register extends Component {
         super(props);
         this.state = {
             sort: '',
-            // type: '',
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            // address: '',
+            gender: '',
+            kosher: false,
+            vegan: false,
+            vegetarian: false,
+            accessibility: false,
+            preferencesPerMeeting: [],
         };
     }
-
-    // static navigationOptions = {
-    //     header: null,
-    // };
 
     static navigationOptions = {
         title: 'הרשמה',
     };
 
-    insertParticipant = () => {
+    insertNewParticipant = () => {
+        var preferenceIDs = this.createPreferencesArray();
+        console.warn("preferenceIDs", preferenceIDs);
+
         var NewParticipant = {
-            Email: this.state.email,
             FirstName: this.state.firstName,
             LastName: this.state.lastName,
+            Email: this.state.email,
             Password: this.state.password,
-            Phone: this.state.phone,
+            Phone: '1',
             Gender: this.state.gender,
-            Image: this.state.image,
-            Address: this.state.address,
-            Preferences: ''
+            Image: '',
+            Address: '',
+            Preferences: preferenceIDs
         };
-        console.warn(NewParticipant);
+        console.warn("NewParticipant", NewParticipant);
 
         fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/participant', {
             method: 'POST',
             headers: { "Content-type": "application/json; charset=UTF-8" },
             body: JSON.stringify(NewParticipant),
         })
-            .then(res => res.json())
-            .then(response => {
+            .then(() => {
+                Alert.alert(
+                    'הודעה',
+                    'נרשמת בהצלחה',
+                    [
+                        { text: 'חזרה לדף התחברות', onPress: () => this.props.navigation.navigate('Login') },
+                        {
+                            text: 'ביטול',
+                            style: 'cancel',
+                        },
+                    ],
+                    { cancelable: false },
+                );
             })
             .catch(error => console.warn('Error:', error.message));
     };
+
+    createPreferencesArray() {
+        var preferenceIDs = []
+        if (this.state.kosher == true) preferenceIDs.push(4);
+        if (this.state.vegan == true) preferenceIDs.push(1);
+        if (this.state.vegetarian == true) preferenceIDs.push(2);
+        if (this.state.accessibility == true) preferenceIDs.push(3);
+        if (this.state.foodType == 'italian') preferenceIDs.push(5);
+        else if (this.state.foodType == 'assian') preferenceIDs.push(6);
+        else if (this.state.foodType == 'middleEastern') preferenceIDs.push(7);
+        else if (this.state.foodType == 'meet') preferenceIDs.push(8);
+        else if (this.state.foodType == 'dontCare') preferenceIDs.push(9);
+        return preferenceIDs;
+    }
 
     onMaleGenderButtonPress = () => {
         this.setState({
@@ -163,25 +198,6 @@ class Register extends Component {
                                 onChangeText={(password) => this.setState({ password })}
                                 value={this.state.password}
                             />
-                            <View>
-                                <Text style={styles.title}>כתובת</Text>
-                            </View>
-                            <Input
-                                onChangeText={(address) => this.setState({ address })}
-                                value={this.state.address}
-                            />
-                            <View style={styles.section}>
-                                <View>
-                                    <Text style={styles.title} >טלפון </Text>
-                                </View>
-                                <Input
-                                    maxLength={10}
-                                    onChangeText={(phone) => this.setState({ phone })}
-                                    value={this.state.phone}
-                                    style={{ flex: 1, marginTop: 30, left: 50 }}
-                                />
-                            </View>
-                            {/* {console.warn(this.state.phone)} */}
                         </View>
                         <View style={styles.section}>
                             <View>
@@ -208,20 +224,12 @@ class Register extends Component {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                        {/* <View>
-                            <Text style={styles.title}> מין </Text>
-                            <View style={{ flex: 1, flexDirection: 'row' }}>
-                                <CustomButton title="זכר" selected={true} onPress={this.genderHandler} />
-                                <CustomButton title="נקבה" />
-                            </View>
-                        </View> */}
                         <View style={styles.section}>
                             <View>
-                                <Text style={styles.title}>סוג אוכל</Text>
+                                <Text style={styles.title}> סוג אוכל מועדף</Text>
                             </View>
                             <View style={styles.group}>
                                 <TouchableOpacity
-                                    //sort: all, rv
                                     style={[styles.button, styles.first, activeType('italian') ? styles.active : null]}
                                     onPress={() => { this.props.setFilters({ type: 'italian' }); this.setState({ foodType: 'italian' }) }}
                                 >
@@ -229,33 +237,41 @@ class Register extends Component {
                                     <View style={{ flexDirection: 'row', }}>
                                         <MaterialIcons name="star" size={24} color={activeType('italian') ? '#FFF' : '#ff5a76'} />
                                     </View>
-                                    <Text style={[styles.buttonText, activeType('italian') ? styles.activeText : null]}>איטלקי</Text>
+                                    <Text style={[styles.buttonTextFoodType, activeType('italian') ? styles.activeText : null]}>אטלקי</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.button, styles.first, activeType('assian') ? styles.active : null]}
+                                    style={[styles.button, activeType('assian') ? styles.active : null]}
                                     onPress={() => { this.props.setFilters({ type: 'assian' }); this.setState({ foodType: 'assian' }) }}
                                 >
                                     <View style={{ flexDirection: 'row', }}>
                                         <MaterialIcons name="star" size={24} color={activeType('assian') ? '#FFF' : '#FF5975'} />
                                     </View>
-                                    <Text style={[styles.buttonText, activeType('assian') ? styles.activeText : null]}>אסייתי</Text>
+                                    <Text style={[styles.buttonTextFoodType, activeType('assian') ? styles.activeText : null]}>אסייתי</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.button, styles.first, activeType('middleEastern') ? styles.active : null]}
+                                    style={[styles.button, activeType('middleEastern') ? styles.active : null]}
                                     onPress={() => { this.props.setFilters({ type: 'middleEastern' }); this.setState({ foodType: 'middleEastern' }) }}
                                 >
                                     <View style={{ flexDirection: 'row', }}>
                                         <MaterialIcons name="star" size={24} color={activeType('middleEastern') ? '#FFF' : '#FF5975'} />
                                     </View>
-                                    <Text style={[styles.buttonText, activeType('middleEastern') ? styles.activeText : null]}>מזרח תיכוני</Text>
+                                    <Text style={[styles.buttonTextFoodType, activeType('middleEastern') ? styles.activeText : null]}>מזרח תיכוני</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.button, styles.last, activeType('meet') ? styles.active : null]}
+                                    style={[styles.button, activeType('meet') ? styles.active : null]}
                                     onPress={() => { this.props.setFilters({ type: 'meet' }); this.setState({ foodType: 'meet' }) }}
                                 >
                                     <MaterialIcons name="star" size={24} color={activeType('meet') ? '#FFF' : '#FF5975'} />
-                                    <Text style={[styles.buttonText, activeType('meet') ? styles.activeText : null]}>בשרים</Text>
+                                    <Text style={[styles.buttonTextFoodType, activeType('meet') ? styles.activeText : null]}>בשר</Text>
                                 </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.button, styles.last, activeType('dontCare') ? styles.active : null]}
+                                    onPress={() => { this.props.setFilters({ type: 'dontCare' }); this.setState({ foodType: "dontCare" }) }}
+                                >
+                                    <MaterialIcons name="star" size={24} color={activeType('dontCare') ? '#FFF' : '#FF5975'} />
+                                    <Text style={[styles.buttonTextFoodType, activeType('dontCare') ? styles.activeText : null]}>לא אכפת לי</Text>
+                                </TouchableOpacity>
+
                                 {console.warn(this.state.foodType)}
                             </View>
                         </View>
@@ -272,21 +288,28 @@ class Register extends Component {
                                         onValueChange={() => { this.props.setFilters({ kosher: !kosher }); { this.setState({ kosher: !this.state.kosher }) } }}
                                     />
                                 </View>
+                                {/* {console.warn("kosher?", this.state.kosher)} */}
                                 <View style={styles.option}>
                                     <Text style={{ fontWeight: '500', }}>טבעוני</Text>
                                     <Switch
                                         value={vegan}
                                         trackColor={{ false: "#EAEAED", true: "#FF5975" }}
-                                        onValueChange={() => { this.props.setFilters({ vegan: !vegan }); { this.setState({ vegan: !this.state.vagan }) } }}
+                                        onValueChange={() => { this.props.setFilters({ vegan: !vegan }); { this.setState({ vegan: !this.state.vegan }) } }}
                                     />
+                                    {/* {console.warn("vegan?", this.state.vegan)} */}
+
                                 </View>
                                 <View style={styles.option}>
                                     <Text style={{ fontWeight: '500', }}>צמחוני</Text>
                                     <Switch
                                         value={vegetarian}
                                         trackColor={{ false: "#EAEAED", true: "#FF5975" }}
-                                        onValueChange={() => { this.props.setFilters({ vegetarian: !vegetarian }); { this.setState({ vegetarian: !this.state.vegetarian }) } }}
+                                        onValueChange={() => {
+                                            this.props.setFilters({ vegetarian: !vegetarian });
+                                            { this.setState({ vegetarian: !this.state.vegetarian }) }
+                                        }}
                                     />
+                                    {/* {console.warn("vegetarian?", this.state.vegetarian)} */}
                                 </View>
                                 <View style={styles.option}>
                                     <Text style={{ fontWeight: '500', }}>נגישות</Text>
@@ -296,6 +319,7 @@ class Register extends Component {
                                         trackColor={{ false: "#EAEAED", true: "#FF5975" }}
                                         onValueChange={() => { this.props.setFilters({ accessibility: !accessibility }); { this.setState({ accessibility: !this.state.accessibility }) } }}
                                     />
+                                    {/* {console.warn("accessibility?", this.state.accessibility)} */}
                                 </View>
                             </View>
                         </View>
@@ -317,42 +341,9 @@ class Register extends Component {
                                     backgroundColor: '#FF5A76'
                                 }}
                                 title="שלח"
-                                onPress={() => this.send()}
+                                onPress={() => this.insertNewParticipant()}
                             />
                         </View>
-                        {/* <Button
-                                containerStyle={{ marginVertical: 20 }}
-                                style={{
-                                    flex: 1,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    left: 65
-                                }}
-                                buttonStyle={{
-                                    height: 55,
-                                    width: width - 160,
-                                    borderRadius: 30,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                }}
-                                linearGradientProps={{
-                                    colors: ['rgb(250, 114, 185)', 'rgb(16, 202, 185)'],
-                                    start: [1, 0],
-                                    end: [0.2, 0],
-                                }}
-                                ViewComponent={LinearGradient}
-                                title="שלח"
-                                titleStyle={{
-                                    // fontFamily: 'regular',
-                                    fontSize: 20,
-                                    color: 'black',
-                                    textAlign: 'center',
-                                }}
-                                onPress={() => { console.log('send'); this.insertParticipant() }}
-                                //onPress={() => { this.props.setFilters({ sort: 'specificArea' }); this.onSpecificAreaButtonPress() }}
-                                activeOpacity={0.5}
-                            /> */}
-
                     </ScrollView>
                 </View>
 
@@ -361,75 +352,75 @@ class Register extends Component {
     }
 }
 
-class CustomButton extends Component {
-    constructor() {
-        super();
+// class CustomButton extends Component {
+//     constructor() {
+//         super();
 
-        this.state = {
-            selected: false,
-            firstName: '',
-            lastName: '',
-            email: '',
-            password: '',
-            phone: '',
-            gender: -1,
-            address: '',
-            originLocation: '',
-            foodType: '',
-            kosher: false,
-            vegan: false,
-            vegetarian: false,
-            accessibility: false,
-            preferences: [],
-        };
+//         this.state = {
+//             selected: false,
+//             firstName: '',
+//             lastName: '',
+//             email: '',
+//             password: '',
+//             phone: '',
+//             gender: -1,
+//             // address: '',
+//             originLocation: '',
+//             foodType: '',
+//             kosher: false,
+//             vegan: false,
+//             vegetarian: false,
+//             accessibility: false,
+//             preferences: [],
+//         };
 
-    }
+//     }
 
-    componentDidMount() {
-        const { selected } = this.props;
+//     componentDidMount() {
+//         const { selected } = this.props;
 
-        this.setState({
-            selected,
-        });
-    }
+//         this.setState({
+//             selected,
+//         });
+//     }
 
-    emailHandler = val => {
-        this.setstate({
-            email: val
-        });
-    };
+//     emailHandler = val => {
+//         this.setstate({
+//             email: val
+//         });
+//     };
 
-    render() {
-        const { title } = this.props;
-        const { selected } = this.state;
+//     render() {
+//         const { title } = this.props;
+//         const { selected } = this.state;
 
-        return (
-            <Button
-                title={title}
-                titleStyle={{ fontSize: 15, color: 'black' }}
-                buttonStyle={
-                    selected
-                        ? {
-                            backgroundColor: 'rgba(171, 189, 219, 1)',
-                            borderRadius: 100,
-                            width: 127,
-                        }
-                        : {
-                            borderWidth: 1,
-                            borderColor: 'black',
-                            borderRadius: 30,
-                            width: 127,
-                            backgroundColor: 'transparent',
-                        }
-                }
-                containerStyle={{ marginRight: 10 }}
-                onPress={() => this.setState({ selected: !selected })}
-            />
-        );
-    }
+//         return (
+//             <Button
+//                 title={title}
+//                 titleStyle={{ fontSize: 15, color: 'black' }}
+//                 buttonStyle={
+//                     selected
+//                         ? {
+//                             backgroundColor: 'rgba(171, 189, 219, 1)',
+//                             borderRadius: 100,
+//                             width: 127,
+//                         }
+//                         : {
+//                             borderWidth: 1,
+//                             borderColor: 'black',
+//                             borderRadius: 30,
+//                             width: 127,
+//                             backgroundColor: 'transparent',
+//                         }
+//                 }
+//                 containerStyle={{ marginRight: 10 }}
+//                 onPress={() => this.setState({ selected: !selected })}
+//             />
+//         );
+//     }
 
 
-}
+// }
 
 const moduleState = state => ({
     filters: state.campings.filters,
@@ -488,12 +479,23 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         alignItems: 'center',
     },
+    buttonText: {
+        textAlign: 'center',
+        fontWeight: '500',
+    },
+    activeText: {
+        color: '#FFF'
+    },
     active: {
         backgroundColor: '#FF5A76',
     },
     first: {
         borderTopLeftRadius: 13,
         borderBottomLeftRadius: 13,
+    },
+    last: {
+        borderTopRightRadius: 13,
+        borderBottomRightRadius: 13,
     },
     group: {
         flexDirection: 'row',

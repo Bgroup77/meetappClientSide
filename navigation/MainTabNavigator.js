@@ -11,7 +11,6 @@ import Results from '../screens/Results';
 import NewMeeting from '../screens/NewMeeting';
 import Login from '../screens/Login';
 import Profile from '../screens/Profile';
-// import PreferencesFromCreateMeeting from '../screens/PreferencesFromCreateMeeting';
 import Preferences from '../screens/Preferences';
 import Register from '../screens/Register';
 
@@ -20,6 +19,15 @@ const HomeStack = createStackNavigator({
   Preferences: Preferences,
   Results: Results,
 });
+
+// const LoginStack = createStackNavigator({
+//   Login: Login,
+//   Register: Register,
+// });
+
+// const RegisterStack = createStackNavigator({
+//   Register: Register,
+// });
 
 HomeStack.navigationOptions = {
   tabBarLabel: 'בית',
@@ -77,8 +85,7 @@ NewMeetingStack.navigationOptions = {
 
 export default createBottomTabNavigator({
   //Results,
-  // Register,
-  //HomeScreenAviel,
+  //Register,
   HomeStack,
   // Results,
   ProfileStack,

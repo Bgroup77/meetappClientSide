@@ -24,7 +24,7 @@ class Profile extends Component {
             lastName: '',
             email: '',
             password: '',
-            address: '',
+            // address: '',
             gender: '',
             foodType: '',
             kosher: false,
@@ -53,7 +53,7 @@ class Profile extends Component {
             gender: userInfo.Gender,
             email: userInfo.Email,
             password: userInfo.Password,
-            address: userInfo.Address,
+            // address: userInfo.Address,
         })
 
         // if (this.state.userInfo.gender == 0) this.setState({ gender: 'male' })
@@ -91,8 +91,7 @@ class Profile extends Component {
         if (this.state.vegetarian == true) this.props.setFilters({ vegetarian: true });
         if (this.state.accessibility == true) this.props.setFilters({ accessibility: true });
     }
-
-
+    //TBD- check this
     _signOutAsync = async () => {
         await AsyncStorage.clear();
         this.props.navigation.navigate('Auth');
@@ -104,12 +103,12 @@ class Profile extends Component {
         console.warn("preferenceIDs", preferenceIDs);
 
         var UpdatedParticipant = {
-            Email: this.state.email,
             FirstName: this.state.firstName,
             LastName: this.state.lastName,
+            Email: this.state.email,
             Password: this.state.password,
             Phone: '1',
-            Address: this.state.address,
+            Address: '',
             Gender: this.state.gender,
             Image: '',
             Preferences: preferenceIDs,
@@ -241,13 +240,13 @@ class Profile extends Component {
                                 onChangeText={(password) => this.setState({ password })}
                                 value={this.state.password}
                             />
-                            <View>
+                            {/* <View>
                                 <Text style={styles.title}>כתובת</Text>
                             </View>
                             <Input
                                 onChangeText={(address) => this.setState({ address })}
                                 value={this.state.address}
-                            />
+                            /> */}
                             {/* <View style={styles.section}>
                                 <View>
                                     <Text style={styles.title} >טלפון </Text>

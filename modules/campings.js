@@ -23,6 +23,7 @@ const INITIAL_STATE = {
     vegan: false,
     vegetarian: false,
     accessibility: false,
+    didUpdatePreferences: false,
   },
   loading: false,
 };

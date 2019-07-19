@@ -8,6 +8,7 @@ import HomeScreen from '../screens/HomeScreen';
 import AuthLoadingScreen from '../screens/AuthLoadingScreen';
 import Login from '../screens/Login';
 import Profile from '../screens/Profile-old';
+import Register from '../screens/Register';
 // import Preferences from '../screens/Preferences';
 
 const AppStack = createSwitchNavigator({
@@ -17,7 +18,11 @@ const AppStack = createSwitchNavigator({
   // Preferences: Preferences,
 });
 
-const AuthStack = createStackNavigator({ SignIn: Login });
+const AuthStack = createStackNavigator({
+  Login: Login,
+  Register: Register,
+
+});
 
 // export default createAppContainer(createSwitchNavigator({
 //   // You could add another route here for authentication.

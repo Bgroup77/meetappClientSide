@@ -48,6 +48,7 @@ export default class Results extends React.Component {
     global.mostWantedFoodTypeNames = [];
     global.destinations = [];
     global.uniquePreferencesPerMeeting = [];
+    global.priceLevel = 2;
 
     const wrappedCallback = (...args) => this.otherFunc(...args);
   }
@@ -79,9 +80,13 @@ export default class Results extends React.Component {
       currentMeetingID: currentMeetingID
     })
     console.warn("CurrentMeetingId", this.state.currentMeetingID);
-    global.placeType = JSON.parse(await AsyncStorage.getItem('currentPlaceType'));
 
+    global.placeType = JSON.parse(await AsyncStorage.getItem('currentPlaceType'));
     console.warn("placeType", global.placeType);
+
+    global.priceLevel = JSON.parse(await AsyncStorage.getItem('currentPriceLevel'));
+    console.warn("priceLevel", global.priceLevel);
+
     this.getOriginInfo();
     //this.getMeetingPreferences();
   };
@@ -91,13 +96,18 @@ export default class Results extends React.Component {
     fetch(url, { method: 'GET' })
       .then(response => response.json())
       .then((response => {
+        //ignore when locationId=1
+        originsInfo = [];
+        response.map(origin => {
+          if (origin.Id != 1) originsInfo.push(origin)
+        })
         this.setState({
-          locationsdata: response
+          locationsdata: originsInfo
         })
       }
       ))
       .then(() => {
-        console.warn("locationsdata", this.state.locationsdata)
+        console.warn("originsInfo", this.state.locationsdata)
         if (this.state.locationsdata.length == 0) alert("לא הוכנסו מקומות מוצא לפגישה. לא ניתן להביא תוצאות")
         else this.getLatLngArrays();
       })
@@ -131,19 +141,19 @@ export default class Results extends React.Component {
       .then(res => res.json())
       .then(response => {
         centerPoint = response;
-        // console.warn("response center point: ", centerPoint);
+        console.warn("from server- center point: ", centerPoint);
         firstCenterPoint = { lat: centerPoint[0], lng: centerPoint[1] };
         // console.warn("first center point: ", firstCenterPoint);
       })
       .then(() => {
         // console.warn("centerPoint", centerPoint);
-        allOptionalCenterPoints = this.generateRandomPoints(centerPoint, 0.5, 30);
+        allOptionalCenterPoints = this.generateRandomPoints(centerPoint, 0.005, 15);
         //console.warn("allOptionalCenterPoints", allOptionalCenterPoints);
 
         allOptionalCenterPoints.push(firstCenterPoint);
         //console.warn("allOptionalCenterPointsWithFirstCP", allOptionalCenterPoints);
         global.destinations = allOptionalCenterPoints;
-        //console.warn("destinations", global.destinations);
+        console.warn("destinations", global.destinations);
       })
       .then(() => {
         this.findDistances(allOptionalCenterPoints);
@@ -169,9 +179,6 @@ export default class Results extends React.Component {
   findDistances(destinations) {
     var sumDistances = 0;
     let distancesArr = [];
-    //console.warn("destinations", destinations);
-    //console.warn("this.state.originsLatLngArr", this.state.originsLatLngArr);
-    //console.warn("final dest", destinations);
     console.warn("final originsLatLngArr", this.state.originsLatLngArr);
 
     googleMapsClient.distanceMatrix({
@@ -192,17 +199,15 @@ export default class Results extends React.Component {
 
   findOptimalPoint(response) {
     if (response) {
-      //console.warn("response", response)
       originList = response.json.origin_addresses;
       destinationList = response.json.destination_addresses;
       console.warn('originList', originList); //google's Origins array, in actual-those are the destinations
       console.warn('destinationList', destinationList); //google's destinations, in actual-those are the origins
 
       //find the distance from the current center point to each origin point and display it on a div
-
       for (var i = 0; i < originList.length; i++) {
         flagZeroResults = 0;
-        console.warn("maayan " + i)
+        //console.warn("maayan " + i)
         sumDistances = 0;
         distancesArr = [];
         currentLatDest = global.destinations[i].lat
@@ -210,7 +215,7 @@ export default class Results extends React.Component {
         currentDest = [currentLatDest, currentLngDest];
         //console.warn("currentDest", currentDest);
         row = response.json.rows[i].elements; //google's Origins, in actual-those are the destinations
-        console.warn("row before exiting when zero res", row)
+        //console.warn("row before exiting when zero res", row)
         row.map(row => {
           if (row.status != "OK") {
             flagZeroResults = 1;
@@ -221,7 +226,7 @@ export default class Results extends React.Component {
 
         if (flagZeroResults == 1) continue;
 
-        console.warn("row after exiting when zero res ", row)
+        //console.warn("row after exiting when zero res ", row)
 
         for (var j = 0; j < row.length; j++) { //elenets array
           // if (row[i].status != 'OK') continue;
@@ -237,7 +242,7 @@ export default class Results extends React.Component {
           distancesArr: distancesArr,
           currentVariance: currentVariance
         }
-        console.warn("object", object);
+        //console.warn("object", object);
         //finding the optimalPoint: minimum distances sum && minimum variance - comparing current destination to past destinations
         if (object.sumDistances < global.minSumDistances && object.currentVariance < global.minVariance) {
           global.minSumDistances = object.sumDistances;
@@ -364,13 +369,13 @@ export default class Results extends React.Component {
     console.warn("optimalPoint from generateReq", global.optimalPoint);
 
     googleMapsClient.placesNearby({
-      // language: 'iw',
+      language: 'iw',
       location: global.optimalPoint,
       // radius: global.radius,
       radius: 4000,
-      // minprice: 2,
-      // maxprice: 2,
-      //keyword: '',
+      minprice: global.priceLevel,
+      maxprice: 2,
+      keyword: global.priceLevel,
       keyword: global.strKeywords,
       type: global.placeType,
       // opennow: v.optional(v.boolean),
@@ -386,11 +391,46 @@ export default class Results extends React.Component {
           placesResults: response.json,
           status: 1
         })
-        if (this.state.placesResults.length == 0) alert("no places found in 4k distance")
+        if (this.state.placesResults.length == 0) alert('לא נמצאו מקומות עד 4 קילומטר מהנקודה האופטימלית')
       })
       .catch((err) => {
         console.warn("err placesNearby:", err);
       })
+  }
+
+  onPressChoosePlace(place) {
+    console.warn("place", place)
+
+    var JsonChoosePlace = {
+      Address: place.vicinity,
+      Latitude: place.geometry.location.lat,
+      Longitude: place.geometry.location.lng,
+      Name: place.name,
+      MeetingId: this.state.currentMeetingID
+    };
+
+    console.warn("JsonChoosePlace", JsonChoosePlace);
+
+    fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/Location', {
+      method: 'POST',
+      headers: { "Content-type": "application/json; charset=UTF-8" },
+      body: JSON.stringify(JsonChoosePlace),
+    })
+      .then(() => {
+        Alert.alert(
+          'הודעה',
+          'המקום נבחר בהצלחה',
+          [
+            { text: 'לחץ למעבר לדף הבית', onPress: () => this.props.navigation.navigate('HomeScreen') },
+            {
+              text: 'ביטול',
+              style: 'cancel',
+            },
+          ],
+          { cancelable: false },
+        );
+      })
+      .catch(error => console.warn('Error:', error.message));
   }
 
   renderMap() {
@@ -446,7 +486,7 @@ export default class Results extends React.Component {
           {
             (this.state.status == 1) &&
             this.state.placesResults.results.map((place, i) => {
-              console.warn("place", place);
+              //console.warn("place", place);
               return (
                 <View key={i} style={styles.place}>
                   <ImageBackground
@@ -468,9 +508,18 @@ export default class Results extends React.Component {
                     </View>
                     <View style={styles.placeInfo}>
                       <Ionicons name="md-pricetag" color="black" size={12} />
-                      {place.price_level == 1 && <Text style={{ marginLeft: 4, color: 'black' }}>רמת מחיר: זול</Text>}
-                      {place.price_level == 2 && <Text style={{ marginLeft: 4, color: 'black' }}>רמת מחיר: בינוני</Text>}
-                      {place.price_level == 3 && <Text style={{ marginLeft: 4, color: 'black' }}>רמת מחיר: יקר</Text>}
+                      {place.price_level == 1 && <Text style={{ marginLeft: 4, color: 'black' }}>רמת מחיר: $</Text>}
+                      {place.price_level == 2 && <Text style={{ marginLeft: 4, color: 'black' }}>רמת מחיר: $$</Text>}
+                      {place.price_level == 3 && <Text style={{ marginLeft: 4, color: 'black' }}>רמת מחיר: $$$</Text>}
+                    </View>
+                    {/* button: */}
+                    <View style={styles.groupSmall}>
+                      <TouchableOpacity
+                        style={[styles.buttonSmall]}
+                        onPress={() => this.onPressChoosePlace(place)}
+                      >
+                        <Text style={[styles.buttonText]}>בחר מקום זה</Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 </View>
@@ -488,7 +537,6 @@ export default class Results extends React.Component {
       <SafeAreaView style={styles.container}>
         <ScrollView style={styles.container}>
           {this.renderMap()}
-          {/* {this.renderList()} */}
         </ScrollView>
       </SafeAreaView>
     );
@@ -512,6 +560,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: height * 0.15,
     paddingHorizontal: 14,
+  },
+  buttonSmall: {
+    flex: 1,
+    padding: 4,
+    alignContent: 'center',
+    alignItems: 'center',
+  },
+  groupSmall: {
+    flexDirection: 'row',
+    borderRadius: 5,
+    borderWidth: 0.5,
+    borderColor: '#5DBCD2',
+    justifyContent: 'space-between',
   },
   place: {
     flex: 1,

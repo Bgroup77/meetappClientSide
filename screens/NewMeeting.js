@@ -63,6 +63,8 @@ class NewMeeting extends React.Component {
     notes: '',
     chosenParticipantIds: [],
     chosenParticipants: [],
+    chosenMails: [],
+    meetingId: 0
   }
 
   //get all users from DB
@@ -181,12 +183,18 @@ class NewMeeting extends React.Component {
       .then(res => res.json())
       .then(response => {
         let meetingId = response;
-        // console.warn("meetingId", meetingId);
+        this.setState({
+          meetingId: meetingId
+        })
         AsyncStorage.setItem("currentMeetingID", JSON.stringify(meetingId));
       })
-      // .then(() => {
+      .then(() => {
+        console.warn("meetingId from new meeting state", this.state.meetingId);
+      })
 
-      // })
+      .then(() => {
+        this.getToken();
+      })
       .then(() => {
         Alert.alert(
           'הודעה',
@@ -201,8 +209,85 @@ class NewMeeting extends React.Component {
           { cancelable: false },
         );
       })
+
+      //to return
+      // .then(() => {
+      //   chosenMails = []
+      //   this.state.allUsers.map(user => {
+      //     this.state.chosenParticipantIds.map(participant => {
+      //       if (participant.Id == user.Id) chosenMails.push(user.Email)
+      //     })
+      //   })
+      //   this.setState({
+      //     chosenMails: chosenMails
+      //   })
+      //   console.warn("chosenMails", this.state.chosenMails)
+      //   //add GetToken Call +  this.sendPushNotification as implemented in Dana's example
+      // })
+
       .catch(error => console.warn('Error:', error.message));
   }
+
+
+
+  getToken() {
+    //will receive chosen participants mails array. will map
+    console.warn("meetingId sendNotifications", this.state.meetingId);
+    fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/participant/GetToken?email=lihi@gmail.com', {
+      method: 'GET',
+      headers: { "Content-type": "application/json; charset=UTF-8" },
+    })
+      .then(res => res.json())
+      .then(response => {
+        console.warn("response from get token", response)
+        this.sendPushNotification(response, "הוזמנת לפגישה חדשה");
+      })
+      .catch(error => console.warn('Error:', error.message));
+  }
+
+  sendPushNotification(Token, message) {
+    console.warn("token from sendPushNotification", Token)
+    console.warn("message", message)
+    var pnd = {
+      to: Token,
+      title: message,
+      body: '',
+      badge: 1
+    }
+    fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/sendpushnotification', {
+      body: JSON.stringify(pnd),
+      method: 'POST',
+      headers: { "Content-type": "application/json; charset=UTF-8" },
+    })
+      .then(response => {
+      })
+      .catch(error => console.warn('Error:', error.message));
+  }
+
+  //TO DELETE-push implementation from DANA
+  // cancelCoupleTraining(CoupleTraining) {
+  //   fetch('http://proj.ruppin.ac.il/bgroup79/test1/tar6/api/CancelCoupleTraining?CoupleTrainingCode=' + CoupleTraining.TrainingCode + '&UserCode=' + this.props.UserCode, {
+  //     body: JSON.stringify({}),
+  //     method: 'POST',
+  //     headers: { "Content-type": "application/json; charset=UTF-8" },
+  //   })
+  //     .then(res => res.json())
+  //     .then(response => {
+  //       alert("The training is canceled!");
+  //       fetch('http://proj.ruppin.ac.il/bgroup79/test1/tar6/api/GetToken?UserCode=' + response, {
+  //         method: 'GET',
+  //         headers: { "Content-type": "application/json; charset=UTF-8" },
+  //       })
+  //         .then(res => res.json())
+  //         .then(response => {
+  //           this.sendPushNotification(response, "your partner has canceled the training");
+  //         })
+  //         .catch(error => console.warn('Error:', error.message));
+  //     })
+  //     .catch(error => console.warn('Error:', error.message));
+  //   this.props.refresh("future");
+  // }
+  //
 
   //show chosen participants
   renderChosenParticipants() {
@@ -370,7 +455,7 @@ class NewMeeting extends React.Component {
             <View><Text style={styles.title}>משתתפי הפגישה שנבחרו</Text></View>
             {this.renderChosenParticipants()}
           </View>
-          <View style={styles.section}>
+          {/* <View style={styles.section}>
             <View>
               <Text style={styles.title}>האם להתמקד בעיר מסוימת לפגישה?</Text>
             </View>
@@ -391,10 +476,9 @@ class NewMeeting extends React.Component {
             <View>
               {this.state.specificAreaOn && <Input onChangeText={specificArea => this.setState({ specificArea })} placeholder='הכנס אזור לפגישה' />}
             </View>
-            {/* {console.warn(this.state.specificArea)} */}
             <View>
             </View>
-          </View>
+          </View> */}
           <View style={styles.section}>
             <View>
               <Text style={styles.title}>מה אני מחפש?</Text>
@@ -432,31 +516,28 @@ class NewMeeting extends React.Component {
                 style={[styles.button, styles.first, price === '$' ? styles.active : null]}
                 onPress={() => { this.props.setFilters({ price: '$' }); { this.HandlePressLowPrice() } }}
               >
-                <Text style={[styles.buttonText, price === '$' ? styles.activeText : null]}>נמוך</Text>
+                <Text style={[styles.buttonText, price === '$' ? styles.activeText : null]}>$</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.button, price === '$$' ? styles.active : null]}
                 onPress={() => { this.props.setFilters({ price: '$$' }); { this.HandlePressMediumPrice() } }}
               >
-                <Text style={[styles.buttonText, price === '$$' ? styles.activeText : null]}>בינוני</Text>
+                <Text style={[styles.buttonText, price === '$$' ? styles.activeText : null]}>$$</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.button, styles.last, price === '$$$' ? styles.active : null]}
                 onPress={() => { this.props.setFilters({ price: '$$$' }); { this.HandlePressHighPrice() } }}
               >
                 {/* {console.warn(this.state.priceLevel)} */}
-                <Text style={[styles.buttonText, price === '$$$' ? styles.activeText : null]}>יקר</Text>
+                <Text style={[styles.buttonText, price === '$$$' ? styles.activeText : null]}>$$$</Text>
               </TouchableOpacity>
             </View>
           </View>
           <View style={styles.section}>
             <Text style={styles.title}>הערות</Text>
-          </View>
-          <View>
             {<Input
               onChangeText={notes => this.setState({ notes })}
             />}
-            {/* {console.warn(this.state.notes)} */}
           </View>
           <View>
             <Button
