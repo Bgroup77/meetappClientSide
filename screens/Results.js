@@ -23,7 +23,8 @@ import { Ionicons, FontAwesome, Foundation, SimpleLineIcons } from '@expo/vector
 const { Marker } = MapView;
 const { width, height } = Dimensions.get('screen');
 var googleMapsClient = require('react-native-google-maps-services').createClient({
-  key: 'AIzaSyAQJQRnhGCQj_MLfWgIIaeaPni4Vzw2eMI',
+  key: 'AIzaSyC6KP6IjpwiP7jW1hsPJGF_YqSrqRaM_sM',
+
   Promise: Promise
 });
 

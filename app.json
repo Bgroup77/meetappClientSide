@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "meetApp-maayan",
+    "name": "meetApp",
     "slug": "meetApp",
     "privacy": "public",
     "sdkVersion": "32.0.0",
@@ -23,6 +23,15 @@
     ],
     "ios": {
       "supportsTablet": true
+    },
+    "android": {
+      "package": "com.meetApp.meetApp",
+      "versionCode": 14,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyC6KP6IjpwiP7jW1hsPJGF_YqSrqRaM_sM"
+        }
+      }
     },
     "description": "your app to find best place to meet!"
   }

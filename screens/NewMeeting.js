@@ -264,31 +264,6 @@ class NewMeeting extends React.Component {
       .catch(error => console.warn('Error:', error.message));
   }
 
-  //TO DELETE-push implementation from DANA
-  // cancelCoupleTraining(CoupleTraining) {
-  //   fetch('http://proj.ruppin.ac.il/bgroup79/test1/tar6/api/CancelCoupleTraining?CoupleTrainingCode=' + CoupleTraining.TrainingCode + '&UserCode=' + this.props.UserCode, {
-  //     body: JSON.stringify({}),
-  //     method: 'POST',
-  //     headers: { "Content-type": "application/json; charset=UTF-8" },
-  //   })
-  //     .then(res => res.json())
-  //     .then(response => {
-  //       alert("The training is canceled!");
-  //       fetch('http://proj.ruppin.ac.il/bgroup79/test1/tar6/api/GetToken?UserCode=' + response, {
-  //         method: 'GET',
-  //         headers: { "Content-type": "application/json; charset=UTF-8" },
-  //       })
-  //         .then(res => res.json())
-  //         .then(response => {
-  //           this.sendPushNotification(response, "your partner has canceled the training");
-  //         })
-  //         .catch(error => console.warn('Error:', error.message));
-  //     })
-  //     .catch(error => console.warn('Error:', error.message));
-  //   this.props.refresh("future");
-  // }
-  //
-
   //show chosen participants
   renderChosenParticipants() {
     if (this.state.chosenParticipants != null) {
@@ -380,7 +355,6 @@ class NewMeeting extends React.Component {
 
     return (
       <SafeAreaView style={styles.container} >
-        {/* {this.renderHeader()} */}
         < ScrollView style={styles.container} >
           <View style={styles.section}>
             <View>

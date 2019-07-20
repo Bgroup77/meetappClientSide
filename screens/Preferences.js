@@ -162,7 +162,6 @@ class Preferences extends React.Component {
 
             )
             .then(res => {
-                // alert("העדפות נוספו בהצלחה")
                 Alert.alert(
                     'הודעה',
                     'העדפות הוזנו בהצלחה',

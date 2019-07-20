@@ -25,7 +25,7 @@ class HomeScreen extends React.Component {
     this.onMeetingsInvitedButton = this.onMeetingsInvitedButton.bind(this);
     this.onApprovedButtonPress = this.onApprovedButtonPress.bind(this);
     this.onRejectButtonPress = this.onRejectButtonPress.bind(this);
-    this.checkParticipantsApprovedMeeting = this.checkParticipantsApprovedMeeting.bind(this);
+    this.createApprovedArray = this.createApprovedArray.bind(this);
 
     this.state = {
       MeetingsIWasInvited: [],
@@ -36,8 +36,6 @@ class HomeScreen extends React.Component {
       meetingsIWascreatedOn: 1,
       meetingsIWasInvitedOn: 0,
       modalVisible: false,
-      //participantsApprovedStr: "",
-      //participantsInsertedPreferencesStr: "",
       meetingsIApproved: [],
       meetingsIRejected: [],
       meetingsIsetPreferences: [],
@@ -46,11 +44,8 @@ class HomeScreen extends React.Component {
       acceptParticipantsNames: "",
       participantsInsertedPreferences: [],
       allUsers: [],
-      // startTime: '',
-      // endTime: '',
-      // specificLocation: '',
-      // placeId: 0,
-      // placeName: '',
+      meetingParticipants: [],
+
     };
   }
 
@@ -114,6 +109,7 @@ class HomeScreen extends React.Component {
       ))
       .then(() => {
         console.warn("allUsers", this.state.allUsers)
+
         //TBD- to add first+last+id name of each participant to an array .fullName= .id=
       })
       .then(() => {
@@ -246,8 +242,26 @@ class HomeScreen extends React.Component {
     });
   }
 
+  checkMeetingParticipants(meetingId, participantsIdsArr) {
+    this.state.meetingParticipants = [];
+    this.state.allUsers.map((user) => {
+      participantsIdsArr.map(p => {
+        if (p == user.Id) {
+          particiant = {
+            Name: user.FirstName + " " + user.LastName + "    ",
+            Id: user.Id
+          }
+          this.state.meetingParticipants.push(particiant)
+        }
+      })
+    })
 
-  checkParticipantsApprovedMeeting(meetingId) {
+    console.warn("meetingParticipants state", this.state.meetingParticipants)
+    this.createApprovedArray(meetingId)
+  }
+
+
+  createApprovedArray(meetingId) {
     console.warn("meeting ID", meetingId);
     this.setState({
       currentMeetingID: meetingId
@@ -261,16 +275,31 @@ class HomeScreen extends React.Component {
           participantsApprovedMeeting: response
         }, () => {
           console.warn("participantsApprovedMeeting", this.state.participantsApprovedMeeting)
+          // participantsApprovedArr = [];
+
+          // for (var i = 0; i < this.state.meetingParticipants; i++) {
+          //   for (var j = 0; j < this.state.participantsApprovedMeeting; j++) {
+          //     if (meetingParticipants[i].Id == this.state.participantsApprovedMeeting[j].Id) {
+          //       participantsApprovedArr[j] = "כן"
+          //     }
+          //     else participantsApprovedArr[j] = "לא"
+          //   }
+          // }
+          // console.warn("participantsApprovedArr", participantsApprovedArr)
         }
         )
       }
       ))
+
+      .then(() => {
+        this.createInsertedPreferencesArray(meetingId);
+      })
       .catch((error) => {
         console.log(error);
       })
   }
 
-  checkParticipantsInsertedPreferences(meetingId) {  // get participants with their preferences - per meeting
+  createInsertedPreferencesArray(meetingId) {  // get participants with their preferences - per meeting
     urlPreferencesMeeting = "http://proj.ruppin.ac.il/bgroup77/prod/api/meeting/GetPreferencesParticipantsByMeetingId?meetingId=" + meetingId;
     fetch(urlPreferencesMeeting, { method: 'GET' })
       .then(response => response.json())
@@ -281,6 +310,30 @@ class HomeScreen extends React.Component {
       }))
       .then(() => {
         console.warn("participantsInsertedPreferences", this.state.participantsInsertedPreferences);
+        console.warn("meetingParticipants", this.state.meetingParticipants)
+        // participantsInsertedArr = [];
+
+        // this.state.meetingParticipants.map(mp => {
+        //   this.state.participantsInsertedPreferences.map(pi => {
+        //     if (mp.Id == pi.Id) {
+        //       participantsInsertedArr.push("כן");
+
+        //     };
+        //   })
+        //   participantsInsertedArr.push("לא")
+        // })
+
+
+        // for (var i = 0; i < this.state.meetingParticipants; i++) {
+        //   for (var j = 0; j < this.state.participantsInsertedPreferences; j++) {
+        //     if (this.state.meetingParticipants[i].Id == this.state.participantsInsertedPreferences[j].Id) {
+        //       participantsInsertedArr[z] = "כן"
+        //     }
+        //     else participantsInsertedArr[z] = "לא"
+        //   }
+        // }
+
+        // console.warn("participantsInsertedArr", participantsInsertedArr)
       })
       .catch((error) => {
         console.log(error);
@@ -364,6 +417,7 @@ class HomeScreen extends React.Component {
 
   _handleButtonPress = () => {
     this.setModalVisible(true);
+
   };
 
   setModalVisible = (visible) => {
@@ -453,47 +507,14 @@ class HomeScreen extends React.Component {
                               style={[styles.buttonSmall]}
                               onPress={() => {
                                 this._handleButtonPress();
-                                { this.checkParticipantsApprovedMeeting(m.Id) }
-                                { this.checkParticipantsInsertedPreferences(m.Id) };
+                                { this.checkMeetingParticipants(m.Id, m.Participants) }
+                                // { this.createApprovedArray(m.Id) }
+                                // { this.createInsertedPreferencesArray(m.Id) };
                               }}
                             >
                               <Text style={[styles.buttonText]}>סטטוס הגעת משתתפים</Text>
                             </TouchableOpacity>
                           </View>
-                          {/* <Modal
-                            width='0.8'
-                            backdropOpacity={1}
-                            animationType="slide"
-                            transparent={false}
-                            visible={this.state.modalVisible}
-                            onRequestClose={() => this.setModalVisible(false)}
-                          >
-                            <View style={styles.modalContainer}>
-                              <View style={styles.innerContainer}>
-                                <Text style={{ color: '#000000', fontWeight: 'bold', }}>סטטוס הגעת משתתפים</Text>
-                                <Text>{"\n"}</Text>
-                                <Text>המשתתפים שאישרו הגעה:</Text>
-                                {this.state.participantsApprovedMeeting.map((u, i) => {
-                                  user = u.FirstName + " " + u.LastName;
-
-                                  return (
-                                    <Text>{user}</Text>
-                                  );
-                                })}
-                                <Text>{"\n"}</Text>
-                                <Text>המשתתפים שהזינו העדפות:</Text>
-                                {this.state.participantsInsertedPreferences.map((u, i) => {
-                                  user = u.FirstName + " " + u.LastName
-                                  return (
-                                    <Text>{user}</Text>
-                                  );
-                                })}
-                                <Button title='סגור'
-                                  buttonStyle={{ backgroundColor: '#808080', color: '#000000' }}
-                                  onPress={this.setModalVisible.bind(this, false)} />
-                              </View>
-                            </View>
-                          </Modal> */}
                           <Dialog
                             width='0.8'
                             footer={
@@ -501,20 +522,28 @@ class HomeScreen extends React.Component {
                                 <View style={styles.modalContainer}>
                                   <View style={styles.rowView}>
                                     <View style={styles.columnView}>
-                                      <Text>    </Text>
-                                      <Text>    אביאל</Text>
-                                      <Text>    מעיין</Text>
+                                      <Text style={{ fontWeight: 'bold' }}>הוזמנו לפגישה    </Text>
+                                      {this.state.meetingParticipants.map((p) => {
+                                        return (
+                                          <Text>{p.Name}</Text>)
+                                      })}
                                     </View>
                                     <View style={styles.columnView}>
-                                      <Text>    אישרו הגעה?</Text>
-                                      <Text>    כן</Text>
+                                      <Text style={{ fontWeight: 'bold' }}>אישרו הגעה    </Text>
+                                      {this.state.participantsApprovedMeeting.map((p) => {
+                                        return (
+                                          <Text>{p.FirstName + " " + p.LastName + "    "}</Text>)
+                                      })}
                                     </View>
                                     <View style={styles.columnView}>
-                                      <Text>    הזינו העדפות?</Text>
-                                      <Text>    לא</Text>
+                                      <Text style={{ fontWeight: 'bold' }}>הזינו העדפות    </Text>
+                                      {this.state.participantsInsertedPreferences.map((p) => {
+                                        return (
+                                          <Text>{p.FirstName + " " + p.LastName + "    "}</Text>)
+                                      })}
                                     </View>
                                   </View>
-                                  <View style={styles.innerContainer}>
+                                  {/* <View style={styles.innerContainer}>
                                     <Text>המשתתפים שאישרו הגעה:</Text>
                                     {this.state.participantsApprovedMeeting.map((u, i) => {
                                       user = u.FirstName + " " + u.LastName;
@@ -531,7 +560,7 @@ class HomeScreen extends React.Component {
                                         <Text key={i}>{user}</Text>
                                       );
                                     })}
-                                  </View>
+                                  </View> */}
                                 </View>
                               </DialogFooter>
                             }
