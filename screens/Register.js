@@ -50,7 +50,7 @@ class Register extends Component {
 
     insertNewParticipant = () => {
         var preferenceIDs = this.createPreferencesArray();
-        console.warn("preferenceIDs", preferenceIDs);
+        //console.warn("preferenceIDs", preferenceIDs);
 
         var NewParticipant = {
             FirstName: this.state.firstName,
@@ -63,7 +63,7 @@ class Register extends Component {
             Address: '',
             Preferences: preferenceIDs
         };
-        console.warn("NewParticipant", NewParticipant);
+        //console.warn("NewParticipant", NewParticipant);
 
         fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/participant', {
             method: 'POST',
@@ -272,7 +272,7 @@ class Register extends Component {
                                     <Text style={[styles.buttonTextFoodType, activeType('dontCare') ? styles.activeText : null]}>לא אכפת לי</Text>
                                 </TouchableOpacity>
 
-                                {console.warn(this.state.foodType)}
+                                {/* {console.warn(this.state.foodType)} */}
                             </View>
                         </View>
                         <View style={styles.section}>

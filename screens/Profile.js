@@ -45,7 +45,7 @@ class Profile extends Component {
 
     getStorageValue = async () => {
         userInfo = JSON.parse(await AsyncStorage.getItem('userInfo'));
-        console.warn("user info", userInfo);
+        //console.warn("user info", userInfo);
         this.setState({
             userInfo: userInfo,
             firstName: userInfo.FirstName,
@@ -64,7 +64,7 @@ class Profile extends Component {
 
     setPreferencesInStates() {
         // var preferences = []
-        console.warn("preferences", userInfo.Preferences);
+        //console.warn("preferences", userInfo.Preferences);
         if (this.state.userInfo.Preferences.includes(1)) this.setState({ vegan: true });
         // console.warn("vegan", this.state.vegan);
         if (this.state.userInfo.Preferences.includes(2)) this.setState({ vegetarian: true });
@@ -100,7 +100,7 @@ class Profile extends Component {
     //update profile. do not forget: update participant in local storage after updating!!
     updateProfile() {
         var preferenceIDs = this.createPreferencesArray();
-        console.warn("preferenceIDs", preferenceIDs);
+        //console.warn("preferenceIDs", preferenceIDs);
 
         var UpdatedParticipant = {
             FirstName: this.state.firstName,
@@ -114,7 +114,7 @@ class Profile extends Component {
             Preferences: preferenceIDs,
         };
 
-        console.warn("UpdatedParticipant", UpdatedParticipant);
+        //console.warn("UpdatedParticipant", UpdatedParticipant);
 
         fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/participant/update', {
             method: 'PUT',
@@ -172,11 +172,8 @@ class Profile extends Component {
                 <StatusBar barStyle="light-content" />
                 <View style={{ flex: 1, backgroundColor: '#fff' }}>
                     <View style={styles.statusBar} />
-                    {/* <View style={styles.navBar}>
-                        <Text style={styles.nameHeader}>הרשמה</Text>
-                    </View> */}
                     <ScrollView style={{ flex: 1 }}>
-                        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                        {/* <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                             <Avatar
                                 source={{
                                     uri:
@@ -188,22 +185,11 @@ class Profile extends Component {
                                 onPress={() => console.log("Avatar Works!")}
                                 activeOpacity={0.7}
                             />
-                        </View>
+                        </View> */}
                         <View
                             style={{
                                 flex: 1,
-                                flexDirection: 'row',
-                                marginTop: 20,
-                                marginHorizontal: 40,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                            }}
-                        >
-                        </View>
-                        <View
-                            style={{
-                                flex: 1,
-                                marginTop: 20,
+                                marginTop: 10,
                                 width: width - 80,
                                 marginLeft: 40,
                             }}
@@ -333,8 +319,6 @@ class Profile extends Component {
                                     <MaterialIcons name="star" size={24} color={activeType('dontCare') ? '#FFF' : '#FF5975'} />
                                     <Text style={[styles.buttonTextFoodType, activeType('dontCare') ? styles.activeText : null]}>לא אכפת לי</Text>
                                 </TouchableOpacity>
-
-                                {console.warn(this.state.foodType)}
                             </View>
                         </View>
                         <View style={styles.section}>

@@ -159,7 +159,7 @@ class NewMeeting extends React.Component {
 
   async sendNewMeetingInfo() {
     userInfo = JSON.parse(await AsyncStorage.getItem('userInfo'));
-    console.warn("user info", userInfo);
+    //console.warn("user info", userInfo);
 
     var NewMeeting = {
       Subject: this.state.subject,
@@ -173,7 +173,7 @@ class NewMeeting extends React.Component {
       PlaceType: this.state.placeType,
       CreatorEmail: userInfo.Email,
     };
-    console.warn(NewMeeting);
+    //console.warn(NewMeeting);
 
     fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/meeting', {
       method: 'POST',
@@ -188,10 +188,12 @@ class NewMeeting extends React.Component {
         })
         AsyncStorage.setItem("currentMeetingID", JSON.stringify(meetingId));
       })
+      // .then(() => {
+      //   console.warn("meetingId from new meeting state", this.state.meetingId);
+      // })
       .then(() => {
-        console.warn("meetingId from new meeting state", this.state.meetingId);
+        AsyncStorage.setItem("currentPlaceType", JSON.stringify(this.state.placeType));
       })
-
       .then(() => {
         this.getToken();
       })
@@ -232,22 +234,22 @@ class NewMeeting extends React.Component {
 
   getToken() {
     //will receive chosen participants mails array. will map
-    console.warn("meetingId sendNotifications", this.state.meetingId);
+    //console.warn("meetingId sendNotifications", this.state.meetingId);
     fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/participant/GetToken?email=lihi@gmail.com', {
       method: 'GET',
       headers: { "Content-type": "application/json; charset=UTF-8" },
     })
       .then(res => res.json())
       .then(response => {
-        console.warn("response from get token", response)
+        //console.warn("response from get token", response)
         this.sendPushNotification(response, "הוזמנת לפגישה חדשה");
       })
       .catch(error => console.warn('Error:', error.message));
   }
 
   sendPushNotification(Token, message) {
-    console.warn("token from sendPushNotification", Token)
-    console.warn("message", message)
+    //console.warn("token from sendPushNotification", Token)
+    //console.warn("message", message)
     var pnd = {
       to: Token,
       title: message,
@@ -351,7 +353,7 @@ class NewMeeting extends React.Component {
         },
       ]
     }
-    console.warn('all users:', this.state.allUsers);
+    //console.warn('all users:', this.state.allUsers);
 
     return (
       <SafeAreaView style={styles.container} >
@@ -417,8 +419,8 @@ class NewMeeting extends React.Component {
                     }
                   }}
               />
-              {console.warn('chosen participants details:', this.state.chosenParticipants)}
-              {console.warn('chosen participants ids:', this.state.chosenParticipantIds)}
+              {/* {console.warn('chosen participants details:', this.state.chosenParticipants)}
+              {console.warn('chosen participants ids:', this.state.chosenParticipantIds)} */}
             </View>
             <View>
               {/* <ListView /> */}

@@ -50,7 +50,8 @@ class Preferences extends React.Component {
         preferencesPerMeeting: [],
         currentMeetingID: 0,
         userInfo: [],
-        didSetPreferneces: false
+        didSetPreferneces: false,
+        placeType: '',
     }
 
     static navigationOptions = {
@@ -67,19 +68,26 @@ class Preferences extends React.Component {
         this.setState({
             currentMeetingID: meetingId
         })
-        console.warn("meetingId", this.state.currentMeetingID);
+        //console.warn("meetingId", this.state.currentMeetingID);
         this.getStorageuserInfoValue();
     };
 
     getStorageuserInfoValue = async () => {
         userInfo = JSON.parse(await AsyncStorage.getItem('userInfo'));
         this.setState({ userInfo: userInfo })
-        console.warn("userInfo", this.state.userInfo);
+        //console.warn("userInfo", this.state.userInfo);
+        this.getPlaceType();
+    };
+
+    getPlaceType = async () => {
+        currentPlaceType = JSON.parse(await AsyncStorage.getItem('currentPlaceType'));
+        this.setState({ placeType: currentPlaceType })
+        //console.warn("placeType State", this.state.placeType);
         this.setPreferencesInStates();
     };
 
     setPreferencesInStates() {
-        console.warn("preferences", this.state.userInfo.Preferences);
+        //console.warn("preferences", this.state.userInfo.Preferences);
         if (this.state.userInfo.Preferences.includes(1)) this.setState({ vegan: true });
         // console.warn("vegan", this.state.vegan);
         if (this.state.userInfo.Preferences.includes(2)) this.setState({ vegetarian: true });
@@ -138,7 +146,7 @@ class Preferences extends React.Component {
         else if (this.state.foodType == 'middleEastern') preferenceIDs.push(7);
         else if (this.state.foodType == 'meet') preferenceIDs.push(8);
 
-        console.warn("preferenceIDs", preferenceIDs);
+        //console.warn("preferenceIDs", preferenceIDs);
 
         var Preferences = {
             PreferenceId: preferenceIDs,
@@ -149,7 +157,7 @@ class Preferences extends React.Component {
             Longitude: this.state.lng,
         };
 
-        console.warn("Preferences", Preferences);
+        //console.warn("Preferences", Preferences);
 
         fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/PostPreferences', {
             method: 'POST',
@@ -208,7 +216,6 @@ class Preferences extends React.Component {
                                 latHandler={this.latHandler.bind(this)}
                                 lngHandler={this.lngHandler.bind(this)}
                             />
-                            {console.warn("origin location", this.state.originLocation)}
                         </View>
                         {//optional- effort mesure
                             /* <View>
@@ -328,7 +335,6 @@ class Preferences extends React.Component {
                                 <MaterialIcons name="star" size={26} color={activeType('dontCare') ? '#FFF' : '#FF5975'} />
                                 <Text style={[styles.buttonTextFoodType, activeType('dontCare') ? styles.activeText : null]}>זורם על הכל</Text>
                             </TouchableOpacity>
-                            {console.warn("dontCare", this.state.dontCare)}
                         </View>
                     </View>
                     <View style={styles.section}>

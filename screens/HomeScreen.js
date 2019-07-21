@@ -70,7 +70,7 @@ class HomeScreen extends React.Component {
 
   getStorageValue = async () => {
     userToken = await AsyncStorage.getItem('userToken');
-    console.warn("userToken", userToken)
+    //console.warn("userToken", userToken)
     this.getUserInfo();
   };
 
@@ -83,7 +83,7 @@ class HomeScreen extends React.Component {
         this.setState({
           userInfo: response
         }, () => {
-          console.warn("user info from state", this.state.userInfo);
+          //console.warn("user info from state", this.state.userInfo);
           AsyncStorage.setItem("userInfo", JSON.stringify(this.state.userInfo));
         })
       }
@@ -108,7 +108,7 @@ class HomeScreen extends React.Component {
       }
       ))
       .then(() => {
-        console.warn("allUsers", this.state.allUsers)
+        //console.warn("allUsers", this.state.allUsers)
 
         //TBD- to add first+last+id name of each participant to an array .fullName= .id=
       })
@@ -121,7 +121,6 @@ class HomeScreen extends React.Component {
   }
 
   getMeetingsIapproved() {
-    console.warn("in getMeetingsIapproved");
     url = "http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/GetMeetingsApprovedPerParticipant?participantId=" + this.state.userInfo.Id;
     fetch(url, { method: 'GET' })
       .then(response => response.json())
@@ -133,7 +132,7 @@ class HomeScreen extends React.Component {
         this.setState({
           meetingsIApproved: meetingsIapprovedIds
         })
-        console.warn("meetingsIApproved", this.state.meetingsIApproved)
+        //console.warn("meetingsIApproved", this.state.meetingsIApproved)
       }
       ))
       .then(() => {
@@ -156,7 +155,7 @@ class HomeScreen extends React.Component {
         this.setState({
           meetingsIRejected: meetingsIrejectedIds
         })
-        console.warn("meetingsIRejected", this.state.meetingsIRejected)
+        //console.warn("meetingsIRejected", this.state.meetingsIRejected)
       }
       ))
       .then(() => {
@@ -179,7 +178,7 @@ class HomeScreen extends React.Component {
         this.setState({
           meetingsIsetPreferences: meetingsIsetPreferenceIds
         })
-        console.warn("meetingsIsetPreferences", this.state.meetingsIsetPreferences)
+        //console.warn("meetingsIsetPreferences", this.state.meetingsIsetPreferences)
       }
       ))
       .then(() => {
@@ -195,11 +194,10 @@ class HomeScreen extends React.Component {
     fetch(url, { method: 'GET' })
       .then(response => response.json())
       .then((response => {
-        console.warn("response", response)
         this.setState({
           MeetingsIWasInvited: response
         })
-        console.warn("MeetingsIWasInvited", this.state.MeetingsIWasInvited)
+        //console.warn("MeetingsIWasInvited", this.state.MeetingsIWasInvited)
       }
       ))
       .then(() => {
@@ -220,9 +218,9 @@ class HomeScreen extends React.Component {
         })
       }
       ))
-      .then(() => {
-        console.warn("meetingsICreated", this.state.MeetingsICreated)
-      })
+      // .then(() => {
+      //   console.warn("meetingsICreated", this.state.MeetingsICreated)
+      // })
       .catch((error) => {
         console.log(error);
       })
@@ -256,13 +254,13 @@ class HomeScreen extends React.Component {
       })
     })
 
-    console.warn("meetingParticipants state", this.state.meetingParticipants)
+    //console.warn("meetingParticipants state", this.state.meetingParticipants)
     this.createApprovedArray(meetingId)
   }
 
 
   createApprovedArray(meetingId) {
-    console.warn("meeting ID", meetingId);
+    //console.warn("meeting ID", meetingId);
     this.setState({
       currentMeetingID: meetingId
     })
@@ -274,7 +272,7 @@ class HomeScreen extends React.Component {
         this.setState({
           participantsApprovedMeeting: response
         }, () => {
-          console.warn("participantsApprovedMeeting", this.state.participantsApprovedMeeting)
+          //console.warn("participantsApprovedMeeting", this.state.participantsApprovedMeeting)
           // participantsApprovedArr = [];
 
           // for (var i = 0; i < this.state.meetingParticipants; i++) {
@@ -308,33 +306,10 @@ class HomeScreen extends React.Component {
           participantsInsertedPreferences: response
         })
       }))
-      .then(() => {
-        console.warn("participantsInsertedPreferences", this.state.participantsInsertedPreferences);
-        console.warn("meetingParticipants", this.state.meetingParticipants)
-        // participantsInsertedArr = [];
-
-        // this.state.meetingParticipants.map(mp => {
-        //   this.state.participantsInsertedPreferences.map(pi => {
-        //     if (mp.Id == pi.Id) {
-        //       participantsInsertedArr.push("כן");
-
-        //     };
-        //   })
-        //   participantsInsertedArr.push("לא")
-        // })
-
-
-        // for (var i = 0; i < this.state.meetingParticipants; i++) {
-        //   for (var j = 0; j < this.state.participantsInsertedPreferences; j++) {
-        //     if (this.state.meetingParticipants[i].Id == this.state.participantsInsertedPreferences[j].Id) {
-        //       participantsInsertedArr[z] = "כן"
-        //     }
-        //     else participantsInsertedArr[z] = "לא"
-        //   }
-        // }
-
-        // console.warn("participantsInsertedArr", participantsInsertedArr)
-      })
+      // .then(() => {
+      //   console.warn("participantsInsertedPreferences", this.state.participantsInsertedPreferences);
+      //   console.warn("meetingParticipants", this.state.meetingParticipants)
+      // })
       .catch((error) => {
         console.log(error);
       })
@@ -367,7 +342,7 @@ class HomeScreen extends React.Component {
       Latitude: 1,
     };
 
-    console.warn("PreferenceParticipantMeetingLocation", PreferenceParticipantMeetingLocation);
+    //console.warn("PreferenceParticipantMeetingLocation", PreferenceParticipantMeetingLocation);
 
     fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/PostAccept', {
       method: 'POST',
@@ -380,13 +355,13 @@ class HomeScreen extends React.Component {
         this.setState({
           meetingsIApproved: newMeetingsIApproved
         })
-        console.warn("newMeetingsIApproved", this.state.meetingsIApproved)
+        //console.warn("newMeetingsIApproved", this.state.meetingsIApproved)
       })
       .catch(error => console.warn('Error:', error.message));
   }
 
   onRejectButtonPress = (meetingId) => {
-    console.warn("meetingId:", meetingId)
+    //console.warn("meetingId:", meetingId)
 
     var JsonUpdateReject = {
       PreferenceId: 10,
@@ -397,7 +372,7 @@ class HomeScreen extends React.Component {
       Longitude: 1,
     };
 
-    console.warn("JsonUpdateReject", JsonUpdateReject);
+    //console.warn("JsonUpdateReject", JsonUpdateReject);
 
     fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/PostDecline', {
       method: 'POST',
@@ -410,7 +385,7 @@ class HomeScreen extends React.Component {
         this.setState({
           meetingsIRejected: newMeetingsIrejected
         })
-        console.warn("newMeetingsIrejected", this.state.meetingsIrejected)
+        //console.warn("newMeetingsIrejected", this.state.meetingsIrejected)
       })
       .catch(error => console.warn('Error:', error.message));
   }
@@ -495,11 +470,10 @@ class HomeScreen extends React.Component {
                         {m.StatusID == 4 && <Text>סטאטוס: פגישת עבר</Text>} */}
                         {
                           (placeWasChosen) &&
-                          <Text>המקום הנבחר לפגישה: </Text>
-                        }
-                        {
-                          (placeWasChosen) &&
-                          <Text style={{ fontWeight: 'bold' }}>{m.LocationName}</Text>
+                          <Text>
+                            <Text>המקום הנבחר לפגישה: </Text>
+                            <Text style={{ fontWeight: 'bold' }}>{m.LocationName}</Text>
+                          </Text>
                         }
                         <View>
                           <View style={styles.groupSmall}>
@@ -606,6 +580,7 @@ class HomeScreen extends React.Component {
                   didApprove = false;
                   didReject = false;
                   didSetPreferences = false;
+                  placeWasChosen = false;
 
                   this.state.meetingsIApproved.map(meetingNum => {
                     if (m.Id == meetingNum) didApprove = true;
@@ -615,8 +590,10 @@ class HomeScreen extends React.Component {
                   })
                   this.state.meetingsIsetPreferences.map(meetingNum => {
                     if (m.Id == meetingNum) didSetPreferences = true;
+                    if (m.LocationName != "") placeWasChosen = true
                   })
-                  console.warn("meetingsIsetPreferences", this.state.meetingsIsetPreferences)
+
+                  //console.warn("meetingsIsetPreferences", this.state.meetingsIsetPreferences)
 
                   subject = 'נושא: ';
                   subject += m.Subject;
@@ -638,8 +615,13 @@ class HomeScreen extends React.Component {
                         {m.StatusID == 3 && <Text>סטאטוס: פגישה עתידית</Text>}
                         {m.SatusID == 4 && <Text>סטאטוס: פגישת עבר</Text>} */}
                         {
-                          (m.LocationName != null) && <Text>המקום הנבחר לפגישה:{m.LocationName}</Text>
+                          (placeWasChosen) &&
+                          <Text>
+                            <Text>המקום הנבחר לפגישה: </Text>
+                            <Text style={{ fontWeight: 'bold' }}>{m.LocationName}</Text>
+                          </Text>
                         }
+
                         <View>
                           {
                             (didReject !== true) &&

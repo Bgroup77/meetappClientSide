@@ -6,7 +6,7 @@ import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import HomeScreenAviel from '../screens/HomeScreenAviel';
 import LinksScreen from '../screens/LinksScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+// import BusinessDetails from '../screens/BusinessDetails';
 import Results from '../screens/Results';
 import NewMeeting from '../screens/NewMeeting';
 import Login from '../screens/Login';
@@ -19,15 +19,6 @@ const HomeStack = createStackNavigator({
   Preferences: Preferences,
   Results: Results,
 });
-
-// const LoginStack = createStackNavigator({
-//   Login: Login,
-//   Register: Register,
-// });
-
-// const RegisterStack = createStackNavigator({
-//   Register: Register,
-// });
 
 HomeStack.navigationOptions = {
   tabBarLabel: 'בית',
@@ -53,19 +44,19 @@ ProfileStack.navigationOptions = {
   ),
 };
 
-const SettingsStack = createStackNavigator({
-  Settings: SettingsScreen,
-});
+// const BusinessDetailsStack = createStackNavigator({
+//   BusinessDetails: BusinessDetails,
+// });
 
-SettingsStack.navigationOptions = {
-  tabBarLabel: 'בתי עסק',
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={'md-business'}
-    />
-  ),
-};
+// BusinessDetailsStack.navigationOptions = {
+//   tabBarLabel: 'בתי עסק',
+//   tabBarIcon: ({ focused }) => (
+//     <TabBarIcon
+//       focused={focused}
+//       name={'md-business'}
+//     />
+//   ),
+// };
 
 const NewMeetingStack = createStackNavigator({
   NewMeeting: NewMeeting,
@@ -86,11 +77,13 @@ NewMeetingStack.navigationOptions = {
 export default createBottomTabNavigator({
   //Results,
   //Register,
+  // BusinessDetails,
+  //BusinessDetailsStack,
   HomeStack,
   // Results,
   ProfileStack,
   NewMeetingStack,
-  SettingsStack,
+
   // Login,
   //MyMeetings
 });
