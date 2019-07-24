@@ -367,7 +367,7 @@ export default class Results extends React.Component {
       language: 'iw',
       location: global.optimalPoint,
       // radius: global.radius,
-      radius: 4000,
+      radius: 5000,
       minprice: global.priceLevel,
       maxprice: 2,
       keyword: global.priceLevel,
