@@ -158,6 +158,29 @@ class NewMeeting extends React.Component {
   }
 
   async sendNewMeetingInfo() {
+    if (this.state.subject=="")
+    alert("נא להזין נושא");
+
+    else if (this.state.date=="")
+    alert("נא להזין תאריך");
+
+    else if (this.state.startTime=="")
+    alert("נא להזין שעת התחלה");
+
+    else if (this.state.startTime>this.state.endTime)
+    alert("נא לבחור שעת סיום מאוחרת משעת התחלה");
+
+    else if (this.state.chosenParticipantIds=="")
+    alert("נא לבחור משתתפים לפגישה");
+
+    else if (this.state.placeType=="")
+    alert("נא לבחור סוג מקום מועדף לפגישה");
+    
+    else if (this.state.priceLevel=="")
+    alert("נא לבחור רמת מחיר לפגישה");
+
+    else {
+
     userInfo = JSON.parse(await AsyncStorage.getItem('userInfo'));
     //console.warn("user info", userInfo);
 
@@ -229,6 +252,7 @@ class NewMeeting extends React.Component {
 
       .catch(error => console.warn('Error:', error.message));
   }
+}
 
 
 

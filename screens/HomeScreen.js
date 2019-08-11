@@ -38,6 +38,7 @@ class HomeScreen extends React.Component {
       modalVisible: false,
       meetingsIApproved: [],
       meetingsIRejected: [],
+      meetingsICanceled: [],
       meetingsIsetPreferences: [],
       participantsApprovedMeeting: [],
       isDialogVisible: false,
@@ -45,7 +46,7 @@ class HomeScreen extends React.Component {
       participantsInsertedPreferences: [],
       allUsers: [],
       meetingParticipants: [],
-
+      pressCancelMeeting:false
     };
   }
 
@@ -66,7 +67,6 @@ class HomeScreen extends React.Component {
   componentWillUnmount() {
     this.willFocusSubscription.remove();
   }
-
 
   getStorageValue = async () => {
     userToken = await AsyncStorage.getItem('userToken');
@@ -115,8 +115,12 @@ class HomeScreen extends React.Component {
       .then(() => {
         this.getMeetingsIapproved();
       })
+      .then(() => {
+        this.getMeetingsCretorCanceled();
+      })
+      
       .catch((error) => {
-        console.warn("error in getting users from DB");
+        //console.warn("error in getting users from DB");
       })
   }
 
@@ -143,6 +147,29 @@ class HomeScreen extends React.Component {
       })
   }
 
+  getMeetingsCretorCanceled() {
+    url = "http://proj.ruppin.ac.il/bgroup77/prod/api/participant/GetMeetingsCanceledByCreator?participantId=" + this.state.userInfo.Id;
+    fetch(url, { method: 'GET' })
+      .then(response => response.json())
+      .then((response => {
+        MeetingsCretorCanceledIds = [];
+        response.map(meeting => {
+          MeetingsCretorCanceledIds.push(meeting.Id)
+        })
+        this.setState({
+          meetingsICanceled: MeetingsCretorCanceledIds
+        })
+        //console.warn("meetingsICanceled", this.state.meetingsICanceled)
+      }
+      ))
+      // .then(() => {
+      //   this.getMeetingsIrejected();
+      // })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+
   getMeetingsIrejected() {
     url = "http://proj.ruppin.ac.il/bgroup77/prod/api/PreferenceParticipantMeetingLocation/GetMeetingsDeclinePerParticipant?participantId=" + this.state.userInfo.Id;
     fetch(url, { method: 'GET' })
@@ -162,7 +189,7 @@ class HomeScreen extends React.Component {
         this.getMeetingsIsetPreferences();
       })
       .catch((error) => {
-        console.warn(error);
+        //console.warn(error);
       })
   }
 
@@ -185,7 +212,7 @@ class HomeScreen extends React.Component {
         this.getMeetingsIWasInvited();
       })
       .catch((error) => {
-        console.warn(error);
+        //console.warn(error);
       })
   }
 
@@ -204,7 +231,7 @@ class HomeScreen extends React.Component {
         this.getMeetingsICreated();
       })
       .catch((error) => {
-        console.log(error);
+        //console.log(error);
       })
   }
 
@@ -257,7 +284,6 @@ class HomeScreen extends React.Component {
     //console.warn("meetingParticipants state", this.state.meetingParticipants)
     this.createApprovedArray(meetingId)
   }
-
 
   createApprovedArray(meetingId) {
     //console.warn("meeting ID", meetingId);
@@ -315,7 +341,6 @@ class HomeScreen extends React.Component {
       })
   }
 
-
   onPressSetPreferencesButton(PassedMeetingID, passedPlaceType) {
     AsyncStorage.setItem("currentMeetingID", JSON.stringify(PassedMeetingID));
     AsyncStorage.setItem("currentPlaceType", JSON.stringify(passedPlaceType));
@@ -331,6 +356,25 @@ class HomeScreen extends React.Component {
 
     this.props.navigation.navigate('Results');
   }
+
+  onPressCancelMeetingButton2(meetingId) {
+    var MeetingId = meetingId;
+    //console.warn("MeetingId", MeetingId);
+    fetch('http://proj.ruppin.ac.il/bgroup77/prod/api/meeting/CancelMeetingByCreator', {
+        method: 'PUT',
+        headers: { "Content-type": "application/json; charset=UTF-8" },
+        body: JSON.stringify(MeetingId),
+        
+       body:MeetingId,
+    })
+        .then(() => {
+            alert(" הפגישה בוטלה בהצלחה");
+        })
+        .catch(error => console.log('Error:', error.message));   
+        this.setState({
+          pressCancelMeeting: true
+        })  
+}
 
   onApprovedButtonPress = (meetingId) => {
     var PreferenceParticipantMeetingLocation = {
@@ -357,7 +401,9 @@ class HomeScreen extends React.Component {
         })
         //console.warn("newMeetingsIApproved", this.state.meetingsIApproved)
       })
-      .catch(error => console.warn('Error:', error.message));
+      .catch(error => 
+        console.log('Error:', error.message)
+        );
   }
 
   onRejectButtonPress = (meetingId) => {
@@ -387,7 +433,7 @@ class HomeScreen extends React.Component {
         })
         //console.warn("newMeetingsIrejected", this.state.meetingsIrejected)
       })
-      .catch(error => console.warn('Error:', error.message));
+      .catch(error => console.log('Error:', error.message));
   }
 
   _handleButtonPress = () => {
@@ -437,15 +483,19 @@ class HomeScreen extends React.Component {
 
             {//פגישות שיזמתי
               (this.state.meetingsIWascreatedOn == 1) &&
+              
               <View style={styles.section}>
                 {this.state.MeetingsICreated.map((m, i) => {
+                  didCancel=false;
                   subject = 'נושא: ';
                   subject += m.Subject;
                   subject += ' ';
-                  subject += m.Id
+                  //subject += m.Id
                   didSetPreferences = false;
                   placeWasChosen = false;
-
+                  this.state.meetingsICanceled.map(meetingNum => {
+                    if (m.Id == meetingNum) didCancel = true;
+                  })
                   //console.warn("meetingsIsetInfo", m)
 
                   this.state.meetingsIsetPreferences.map(meetingNum => {
@@ -476,8 +526,8 @@ class HomeScreen extends React.Component {
                           </Text>
                         }
                         <View>
-                          <View style={styles.groupSmall}>
-                            <TouchableOpacity
+                        <View style={styles.groupSmall}>
+                              {this.state.pressCancelMeeting==false &&  <TouchableOpacity
                               style={[styles.buttonSmall]}
                               onPress={() => {
                                 this._handleButtonPress();
@@ -487,7 +537,7 @@ class HomeScreen extends React.Component {
                               }}
                             >
                               <Text style={[styles.buttonText]}>סטטוס הגעת משתתפים</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity>}
                           </View>
                           <Dialog
                             width='0.8'
@@ -551,20 +601,38 @@ class HomeScreen extends React.Component {
                           >
                           </Dialog>
                           <View style={styles.groupSmall}>
-                            <TouchableOpacity
+                              {this.state.pressCancelMeeting==false &&  <TouchableOpacity
                               disabled={didSetPreferences} style={[styles.buttonSmall]}
                               onPress={() => this.onPressSetPreferencesButton(m.Id, m.PlaceType)}>
                               <Text style={[didSetPreferences ? styles.buttonTextDisabled : styles.buttonText]}>הזן העדפות לפגישה</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity>}
                           </View>
+                         
                           <View style={styles.groupSmall}>
-                            <TouchableOpacity
+                              {this.state.pressCancelMeeting==false &&  <TouchableOpacity
                               style={[styles.buttonSmall]}
                               disabled={placeWasChosen}
                               onPress={() => this.onPressGetResultsButton(m.Id, m.PlaceType, m.PriceLevel)}>
                               <Text style={[placeWasChosen ? styles.buttonTextDisabled : styles.buttonText]}>הרץ לקבלת תוצאות</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> }
                           </View>
+                          <View style={styles.groupSmall}>
+                              <TouchableOpacity
+                                style={[styles.buttonSmall]}
+                                disabled={didCancel}
+                                onPress={() => this.onPressCancelMeetingButton2(m.Id)}>
+                                <View>
+                              {this.state.pressCancelMeeting==false &&
+                                //<Text style={ styles.buttonText}>ביטול פגישה</Text>}
+                                <Text style={[didCancel ? styles.buttonTextDisabled : styles.buttonText]}>ביטול פגישה</Text>}
+                                </View>
+                                {/* <View>
+                              {this.state.pressCancelMeeting==true &&
+                                <Text style={ styles.buttonText} style={styles.red}>פגישה מבוטלת</Text>}
+                                
+                                  </View> */}
+                              </TouchableOpacity>
+                            </View>
                         </View>
                       </View>
                     </Card>
@@ -578,7 +646,7 @@ class HomeScreen extends React.Component {
               <View style={styles.section}>
                 {this.state.MeetingsIWasInvited.map((m, i) => {
                   didApprove = false;
-                  didReject = false;
+                  didReject = false;                  
                   didSetPreferences = false;
                   placeWasChosen = false;
 
@@ -591,14 +659,14 @@ class HomeScreen extends React.Component {
                   this.state.meetingsIsetPreferences.map(meetingNum => {
                     if (m.Id == meetingNum) didSetPreferences = true;
                     if (m.LocationName != "") placeWasChosen = true
-                  })
+                  })                  
 
                   //console.warn("meetingsIsetPreferences", this.state.meetingsIsetPreferences)
 
                   subject = 'נושא: ';
                   subject += m.Subject;
                   subject += ' ';
-                  subject += m.Id
+                  //subject += m.Id
                   return (
                     <Card key={i} title={subject} >
                       <View key={i}>
@@ -824,6 +892,12 @@ const styles = StyleSheet.create({
     color: '#BEBEBE',
   },
 
+  red: {
+    textAlign: 'center',
+    fontWeight: '500',
+    backgroundColor: '#BEBEBE',
+  },
+
   active: {
     backgroundColor: '#FF5A76',
   },
@@ -847,3 +921,5 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
 });
+
+

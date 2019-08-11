@@ -173,9 +173,10 @@ class Profile extends Component {
                 <View style={{ flex: 1, backgroundColor: '#fff' }}>
                     <View style={styles.statusBar} />
                     <ScrollView style={{ flex: 1 }}>
-                        {/* <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                            <Avatar
+                        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                            {/* <Avatar
                                 source={{
+                                    
                                     uri:
                                         'https://static.pexels.com/photos/428336/pexels-photo-428336.jpeg',
                                 }}
@@ -184,8 +185,45 @@ class Profile extends Component {
                                 title="CR"
                                 onPress={() => console.log("Avatar Works!")}
                                 activeOpacity={0.7}
-                            />
-                        </View> */}
+                            /> */}
+                            {/* {(this.state.gender==0) &&
+                            <View></View>
+              <Image source={require(this.state.maleImage)
+                style={styles.welcomeImage}
+                /> */}
+            <View>
+              {this.state.gender==0 && <Image   
+                                            source={require('../assets/images/MaleAvatar.png')}
+                                            style={styles.welcomeImage}
+                                        />}
+            </View>
+            <View>
+              {this.state.gender==1 && <Image   
+                                            source={require('../assets/images/FemaleAvatar.png')}
+                                            style={styles.welcomeImage}
+                                        />}
+            </View>
+                             {/* <Image  
+                                
+                                source={
+                                    if (this.state.gender==0)
+                                        require(this.state.maleImage);
+                                    else
+                                        require(this.state.femaleImage);
+                                }
+                                style={styles.welcomeImage}
+                            /> */}
+                              {/* <Image  
+                                
+                                source={
+                                    if (this.state.gender==0)
+                                        require(this.state.maleImage);
+                                    else
+                                        require(this.state.femaleImage);
+                                }
+                                style={styles.welcomeImage}
+                            /> */}
+                        </View>                        
                         <View
                             style={{
                                 flex: 1,
@@ -272,55 +310,56 @@ class Profile extends Component {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                        <View style={styles.section}>
-                            <View>
-                                <Text style={styles.title}> סוג אוכל מועדף</Text>
-                            </View>
-                            <View style={styles.group}>
-                                <TouchableOpacity
-                                    style={[styles.button, styles.first, activeType('italian') ? styles.active : null]}
-                                    onPress={() => { this.props.setFilters({ type: 'italian' }); this.setState({ foodType: 'italian' }) }}
-                                >
-
-                                    <View style={{ flexDirection: 'row', }}>
-                                        <MaterialIcons name="star" size={24} color={activeType('italian') ? '#FFF' : '#ff5a76'} />
-                                    </View>
-                                    <Text style={[styles.buttonTextFoodType, activeType('italian') ? styles.activeText : null]}>אטלקי</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.button, activeType('assian') ? styles.active : null]}
-                                    onPress={() => { this.props.setFilters({ type: 'assian' }); this.setState({ foodType: 'assian' }) }}
-                                >
-                                    <View style={{ flexDirection: 'row', }}>
-                                        <MaterialIcons name="star" size={24} color={activeType('assian') ? '#FFF' : '#FF5975'} />
-                                    </View>
-                                    <Text style={[styles.buttonTextFoodType, activeType('assian') ? styles.activeText : null]}>אסייתי</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.button, activeType('middleEastern') ? styles.active : null]}
-                                    onPress={() => { this.props.setFilters({ type: 'middleEastern' }); this.setState({ foodType: 'middleEastern' }) }}
-                                >
-                                    <View style={{ flexDirection: 'row', }}>
-                                        <MaterialIcons name="star" size={24} color={activeType('middleEastern') ? '#FFF' : '#FF5975'} />
-                                    </View>
-                                    <Text style={[styles.buttonTextFoodType, activeType('middleEastern') ? styles.activeText : null]}>מזרח תיכוני</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.button, activeType('meet') ? styles.active : null]}
-                                    onPress={() => { this.props.setFilters({ type: 'meet' }); this.setState({ foodType: 'meet' }) }}
-                                >
-                                    <MaterialIcons name="star" size={24} color={activeType('meet') ? '#FFF' : '#FF5975'} />
-                                    <Text style={[styles.buttonTextFoodType, activeType('meet') ? styles.activeText : null]}>בשר</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.button, styles.last, activeType('dontCare') ? styles.active : null]}
-                                    onPress={() => { this.props.setFilters({ type: 'dontCare' }); this.setState({ foodType: "dontCare" }) }}
-                                >
-                                    <MaterialIcons name="star" size={24} color={activeType('dontCare') ? '#FFF' : '#FF5975'} />
-                                    <Text style={[styles.buttonTextFoodType, activeType('dontCare') ? styles.activeText : null]}>לא אכפת לי</Text>
-                                </TouchableOpacity>
-                            </View>
+                             <View style={styles.section}>
+                        <View>
+                            <Text style={styles.title}> סוג אוכל מועדף</Text>
                         </View>
+                        <View style={styles.group}>
+                            <TouchableOpacity
+                                //sort: all, rv
+                                style={[styles.button, styles.first, activeType('italian') ? styles.active : null]}
+                                onPress={() => { this.props.setFilters({ type: 'italian' }); this.setState({ foodType: 'italian' }) }}
+                            >
+
+                                <View style={{ flexDirection: 'row', }}>
+                                    <MaterialIcons name="star" size={26} color={activeType('italian') ? '#FFF' : '#ff5a76'} />
+                                </View>
+                                <Text style={[styles.buttonTextFoodType, activeType('italian') ? styles.activeText : null]}>איטלקי</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.button, styles.first, activeType('assian') ? styles.active : null]}
+                                onPress={() => { this.props.setFilters({ type: 'assian' }); this.setState({ foodType: 'assian' }) }}
+                            >
+                                <View style={{ flexDirection: 'row', }}>
+                                    <MaterialIcons name="star" size={26} color={activeType('assian') ? '#FFF' : '#FF5975'} />
+                                </View>
+                                <Text style={[styles.buttonTextFoodType, activeType('assian') ? styles.activeText : null]}>אסייתי</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.button, styles.first, activeType('middleEastern') ? styles.active : null]}
+                                onPress={() => { this.props.setFilters({ type: 'middleEastern' }); this.setState({ foodType: 'middleEastern' }) }}
+                            >
+                                <View style={{ flexDirection: 'row', }}>
+                                    <MaterialIcons name="star" size={26} color={activeType('middleEastern') ? '#FFF' : '#FF5975'} />
+                                </View>
+                                <Text style={[styles.buttonTextFoodType, activeType('middleEastern') ? styles.activeText : null]}>מזרח תיכוני</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.button, styles.last, activeType('meet') ? styles.active : null]}
+                                onPress={() => { this.props.setFilters({ type: 'meet' }); this.setState({ foodType: 'meet' }) }}
+                            >
+                                <MaterialIcons name="star" size={26} color={activeType('meet') ? '#FFF' : '#FF5975'} />
+                                <Text style={[styles.buttonTextFoodType, activeType('meet') ? styles.activeText : null]}>בשרי</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.button, styles.last, activeType('dontCare') ? styles.active : null]}
+                                onPress={() => { this.props.setFilters({ type: 'dontCare' }); this.setState({ dontCare: !this.state.dontCare }) }}
+                            >
+                                <MaterialIcons name="star" size={26} color={activeType('dontCare') ? '#FFF' : '#FF5975'} />
+                                <Text style={[styles.buttonTextFoodType, activeType('dontCare') ? styles.activeText : null]}>זורם על הכל</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                         <View style={styles.section}>
                             <View>
                                 <Text style={styles.title}>העדפות נוספות</Text>
@@ -451,7 +490,7 @@ const styles = StyleSheet.create({
     },
     button: {
         flex: 1,
-        padding: 14,
+        padding: 12,
         alignContent: 'center',
         alignItems: 'center',
     },
@@ -485,4 +524,11 @@ const styles = StyleSheet.create({
         borderColor: '#5DBCD2',
         justifyContent: 'space-between',
     },
+    welcomeImage: {
+        width: 150,
+        height: 150,
+        resizeMode: 'contain',
+        marginTop: 3,
+        marginLeft: -10,
+      },
 });
