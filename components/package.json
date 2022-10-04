@@ -16,7 +16,7 @@
     "@material-ui/core": "^3.9.3",
     "@material-ui/icons": "^3.0.2",
     "@wojtekmaj/react-timerange-picker": "^2.1.0",
-    "expo": "^32.0.0",
+    "expo": "^46.0.14",
     "moment": "^2.24.0",
     "qs-google-signature": "^1.2.0",
     "react": "16.5.0",
